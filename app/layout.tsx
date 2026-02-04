@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/lib/auth-context";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const inter = Inter({
   subsets: ["latin", "cyrillic"],
@@ -42,9 +43,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-background text-foreground min-h-screen`}
       >
-        <AuthProvider>
-          <AppShell>{children}</AppShell>
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+          </AuthProvider>
+        </Providers>
         <Toaster />
         <Analytics />
       </body>
