@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Music } from "lucide-react";
 
@@ -82,13 +82,20 @@ export default function LoginPage() {
                 >
                   <div className="relative">
                     <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(musician.name)}
-                      </AvatarFallback>
+                      {musician.avatar ? (
+                        <AvatarImage
+                          src={musician.avatar}
+                          alt={musician.name}
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(musician.name)}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                     <span
                       className={`absolute bottom-0 right-0 w-3 h-3 ${getStatusColor(
-                        musician.status
+                        musician.status,
                       )} border-2 border-card rounded-full`}
                     />
                   </div>

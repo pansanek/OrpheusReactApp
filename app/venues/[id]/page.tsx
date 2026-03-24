@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { use, useState } from 'react';
-import Link from 'next/link';
-import { getVenueById } from '@/lib/mock-data';
-import { useAuth } from '@/lib/auth-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { use, useState } from "react";
+import Link from "next/link";
+import { getVenueById } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-context";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   MapPin,
   Star,
@@ -30,26 +36,34 @@ import {
   Phone,
   Mail,
   CheckCircle2,
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-export default function VenuePage({ params }: { params: Promise<{ id: string }> }) {
+export default function VenuePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const { currentUser } = useAuth();
   const venueId = parseInt(id);
-  const venue = getVenueById(venueId);
-  
-  const [bookingDate, setBookingDate] = useState('');
-  const [bookingTime, setBookingTime] = useState('');
-  const [bookingHours, setBookingHours] = useState('2');
+  const venue = getVenueById(id);
+
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingTime, setBookingTime] = useState("");
+  const [bookingHours, setBookingHours] = useState("2");
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
 
   if (!venue) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Учреждение не найдено</h1>
-        <p className="text-muted-foreground mb-6">Учреждение с ID {id} не существует</p>
+        <h1 className="text-2xl font-bold text-foreground mb-4">
+          Учреждение не найдено
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          Учреждение с ID {id} не существует
+        </p>
         <Link href="/venues">
           <Button>Вернуться к списку</Button>
         </Link>
@@ -59,28 +73,36 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'студия': return <Music className="h-5 w-5" />;
-      case 'репетиционная база': return <Building2 className="h-5 w-5" />;
-      case 'концертный зал': return <Building2 className="h-5 w-5" />;
-      default: return <Building2 className="h-5 w-5" />;
+      case "студия":
+        return <Music className="h-5 w-5" />;
+      case "репетиционная база":
+        return <Building2 className="h-5 w-5" />;
+      case "концертный зал":
+        return <Building2 className="h-5 w-5" />;
+      default:
+        return <Building2 className="h-5 w-5" />;
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'студия': return 'Студия звукозаписи';
-      case 'репетиционная база': return 'Репетиционная база';
-      case 'концертный зал': return 'Концертный зал';
-      default: return type;
+      case "студия":
+        return "Студия звукозаписи";
+      case "репетиционная база":
+        return "Репетиционная база";
+      case "концертный зал":
+        return "Концертный зал";
+      default:
+        return type;
     }
   };
 
   const handleBooking = () => {
     if (!bookingDate || !bookingTime) {
       toast({
-        title: 'Ошибка',
-        description: 'Пожалуйста, выберите дату и время',
-        variant: 'destructive',
+        title: "Ошибка",
+        description: "Пожалуйста, выберите дату и время",
+        variant: "destructive",
       });
       return;
     }
@@ -88,7 +110,7 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
     setIsBooked(true);
     setIsBookingOpen(false);
     toast({
-      title: 'Бронирование подтверждено!',
+      title: "Бронирование подтверждено!",
       description: `${venue.name} забронировано на ${bookingDate} в ${bookingTime}`,
     });
   };
@@ -98,8 +120,8 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Back Link */}
-      <Link 
-        href="/venues" 
+      <Link
+        href="/venues"
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -115,7 +137,7 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
               {getTypeIcon(venue.type)}
               <span className="sr-only">Фото {venue.name}</span>
             </div>
-            
+
             <div className="flex-1">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div>
@@ -125,26 +147,32 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                     </Badge>
                     <div className="flex items-center gap-1 text-warning">
                       <Star className="h-4 w-4 fill-current" />
-                      <span className="text-sm font-medium">{venue.rating}</span>
+                      <span className="text-sm font-medium">
+                        {venue.rating}
+                      </span>
                     </div>
                   </div>
-                  <h1 className="text-2xl font-bold text-foreground">{venue.name}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {venue.name}
+                  </h1>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2 text-muted-foreground mb-4">
                 <MapPin className="h-4 w-4" />
                 <span>{venue.address}</span>
               </div>
-              
+
               <p className="text-foreground mb-6">{venue.description}</p>
-              
+
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm text-muted-foreground">Стоимость</p>
-                    <p className="font-semibold text-foreground">{venue.pricePerHour.toLocaleString('ru-RU')} руб./час</p>
+                    <p className="font-semibold text-foreground">
+                      {venue.pricePerHour.toLocaleString("ru-RU")} руб./час
+                    </p>
                   </div>
                 </div>
               </div>
@@ -154,7 +182,9 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                 isBooked ? (
                   <div className="flex items-center gap-2 text-success">
                     <CheckCircle2 className="h-5 w-5" />
-                    <span className="font-medium">Забронировано на {bookingDate} в {bookingTime}</span>
+                    <span className="font-medium">
+                      Забронировано на {bookingDate} в {bookingTime}
+                    </span>
                   </div>
                 ) : (
                   <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
@@ -171,7 +201,7 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                           Выберите дату, время и продолжительность
                         </DialogDescription>
                       </DialogHeader>
-                      
+
                       <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                           <Label htmlFor="date">Дата</Label>
@@ -180,10 +210,10 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                             type="date"
                             value={bookingDate}
                             onChange={(e) => setBookingDate(e.target.value)}
-                            min={new Date().toISOString().split('T')[0]}
+                            min={new Date().toISOString().split("T")[0]}
                           />
                         </div>
-                        
+
                         <div className="grid gap-2">
                           <Label htmlFor="time">Время начала</Label>
                           <Input
@@ -193,9 +223,11 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                             onChange={(e) => setBookingTime(e.target.value)}
                           />
                         </div>
-                        
+
                         <div className="grid gap-2">
-                          <Label htmlFor="hours">Продолжительность (часов)</Label>
+                          <Label htmlFor="hours">
+                            Продолжительность (часов)
+                          </Label>
                           <Input
                             id="hours"
                             type="number"
@@ -205,19 +237,22 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                             onChange={(e) => setBookingHours(e.target.value)}
                           />
                         </div>
-                        
+
                         <Separator />
-                        
+
                         <div className="flex justify-between items-center">
                           <span className="text-muted-foreground">Итого:</span>
                           <span className="text-xl font-bold text-foreground">
-                            {totalPrice.toLocaleString('ru-RU')} руб.
+                            {totalPrice.toLocaleString("ru-RU")} руб.
                           </span>
                         </div>
                       </div>
-                      
+
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsBookingOpen(false)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsBookingOpen(false)}
+                        >
                           Отмена
                         </Button>
                         <Button onClick={handleBooking}>
@@ -229,7 +264,9 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
                 )
               ) : (
                 <div className="text-center p-4 bg-muted rounded-lg">
-                  <p className="text-muted-foreground mb-2">Войдите, чтобы забронировать</p>
+                  <p className="text-muted-foreground mb-2">
+                    Войдите, чтобы забронировать
+                  </p>
                   <Button asChild>
                     <Link href="/login">Войти</Link>
                   </Button>
@@ -271,14 +308,18 @@ export default function VenuePage({ params }: { params: Promise<{ id: string }> 
               <Phone className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Телефон</p>
-                <p className="font-medium text-foreground">+7 (999) 123-45-67</p>
+                <p className="font-medium text-foreground">
+                  +7 (999) 123-45-67
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
               <Mail className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium text-foreground">info@{venue.name.toLowerCase().replace(/\s+/g, '')}.ru</p>
+                <p className="font-medium text-foreground">
+                  info@{venue.name.toLowerCase().replace(/\s+/g, "")}.ru
+                </p>
               </div>
             </div>
           </div>

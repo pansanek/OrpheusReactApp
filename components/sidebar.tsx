@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getGroupsByMusicianId } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Home,
   Search,
@@ -63,7 +63,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <aside
         className={cn(
           "fixed lg:sticky top-0 lg:top-16 left-0 z-50 lg:z-0 h-screen lg:h-[calc(100vh-4rem)] w-[280px] bg-sidebar border-r border-sidebar-border p-4 overflow-y-auto transition-transform duration-200",
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         {/* Mobile close button */}
@@ -79,9 +79,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-sidebar-accent transition-colors mb-4"
         >
           <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(currentUser.name)}
-            </AvatarFallback>
+            {currentUser.avatar ? (
+              <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+            ) : (
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {getInitials(currentUser.name)}
+              </AvatarFallback>
+            )}
           </Avatar>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sidebar-foreground truncate">
@@ -101,7 +105,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
               pathname === "/"
                 ? "bg-primary text-primary-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent"
+                : "text-sidebar-foreground hover:bg-sidebar-accent",
             )}
           >
             <Home className="h-5 w-5" />
@@ -116,7 +120,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                 pathname === item.href
                   ? "bg-primary text-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent",
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -143,7 +147,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                     pathname === `/groups/${group.id}`
                       ? "bg-sidebar-accent"
-                      : "hover:bg-sidebar-accent"
+                      : "hover:bg-sidebar-accent",
                   )}
                 >
                   <Avatar className="h-8 w-8">

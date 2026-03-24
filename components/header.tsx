@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,9 +91,16 @@ export function Header({ onMenuClick }: HeaderProps) {
                     className="relative h-10 w-10 rounded-full"
                   >
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(currentUser.name)}
-                      </AvatarFallback>
+                      {currentUser.avatar ? (
+                        <AvatarImage
+                          src={currentUser.avatar}
+                          alt={currentUser.name}
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(currentUser.name)}
+                        </AvatarFallback>
+                      )}
                     </Avatar>
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-[var(--status-online)] border-2 border-card rounded-full" />
                   </Button>

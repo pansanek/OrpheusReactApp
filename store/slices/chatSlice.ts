@@ -1,130 +1,68 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Chat, ChatState, ChatType, Message } from '../types/chat.types';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Chat, ChatState, ChatType, Message } from "../types/chat.types";
+import { musicians, venues } from "@/lib/mock-data";
 
-// Mock данные для инициализации
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+};
+
 const mockChats: Chat[] = [
   {
-    id: 'chat-1',
+    id: "chat-1",
     type: ChatType.DIRECT,
-    name: 'Иван Петров',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ivan',
-    participants: ['user-current', 'user-1'],
+    name: musicians[1].name,
+    avatar: musicians[1].avatar || getInitials(musicians[1].name),
+    participants: ["user-current", musicians[1].id.toString()],
     createdAt: Date.now() - 86400000,
     updatedAt: Date.now() - 3600000,
     unreadCount: 2,
     lastMessage: {
-      id: 'msg-1',
-      chatId: 'chat-1',
-      senderId: 'user-1',
-      senderName: 'Иван Петров',
-      content: 'Давай встретимся завтра?',
+      id: "msg-1",
+      chatId: "chat-1",
+      senderId: musicians[1].id.toString(),
+      senderName: musicians[1].name,
+      content: "Давай встретимся завтра?",
       timestamp: Date.now() - 3600000,
-      type: 'text',
+      type: "text",
       read: false,
     },
-  },
-  {
-    id: 'chat-2',
-    type: ChatType.GROUP,
-    name: 'Квартет скрипачей',
-    description: 'Группа для координации репетиций',
-    participants: ['user-current', 'user-2', 'user-3', 'user-4'],
-    createdAt: Date.now() - 172800000,
-    updatedAt: Date.now() - 1800000,
-    admin: 'user-2',
-    membersCount: 4,
-    unreadCount: 0,
-  },
-  {
-    id: 'chat-3',
-    type: ChatType.INSTITUTION,
-    name: 'Московская консерватория',
-    participants: ['user-current'],
-    createdAt: Date.now() - 259200000,
-    updatedAt: Date.now() - 7200000,
-    institution: {
-      id: 'inst-1',
-      name: 'Московская консерватория',
-      category: 'Образование',
-    },
-    unreadCount: 1,
   },
 ];
 
 const mockMessages: Record<string, Message[]> = {
-  'chat-1': [
+  "chat-1": [
     {
-      id: 'msg-1',
-      chatId: 'chat-1',
-      senderId: 'user-current',
-      senderName: 'Вы',
-      content: 'Привет! Как дела?',
+      id: "msg-1",
+      chatId: "chat-1",
+      senderId: "user-current",
+      senderName: "Вы",
+      content: "Привет! Как дела?",
       timestamp: Date.now() - 7200000,
-      type: 'text',
+      type: "text",
       read: true,
     },
     {
-      id: 'msg-2',
-      chatId: 'chat-1',
-      senderId: 'user-1',
-      senderName: 'Иван Петров',
-      content: 'Привет! Всё хорошо, спасибо.',
+      id: "msg-2",
+      chatId: "chat-1",
+      senderId: musicians[1].id.toString(),
+      senderName: musicians[1].name,
+      content: "Привет! Всё хорошо, спасибо.",
       timestamp: Date.now() - 6900000,
-      type: 'text',
+      type: "text",
       read: true,
     },
     {
-      id: 'msg-3',
-      chatId: 'chat-1',
-      senderId: 'user-1',
-      senderName: 'Иван Петров',
-      content: 'Давай встретимся завтра?',
+      id: "msg-3",
+      chatId: "chat-1",
+      senderId: musicians[1].id.toString(),
+      senderName: musicians[1].name,
+      content: "Давай встретимся завтра?",
       timestamp: Date.now() - 3600000,
-      type: 'text',
-      read: false,
-    },
-  ],
-  'chat-2': [
-    {
-      id: 'msg-4',
-      chatId: 'chat-2',
-      senderId: 'user-3',
-      senderName: 'Мария Сидорова',
-      content: 'Репетиция в 19:00?',
-      timestamp: Date.now() - 5400000,
-      type: 'text',
-      read: true,
-    },
-    {
-      id: 'msg-5',
-      chatId: 'chat-2',
-      senderId: 'user-2',
-      senderName: 'Петр Иванов',
-      content: 'Согласен, зал забронирован',
-      timestamp: Date.now() - 5100000,
-      type: 'text',
-      read: true,
-    },
-  ],
-  'chat-3': [
-    {
-      id: 'msg-6',
-      chatId: 'chat-3',
-      senderId: 'inst-1',
-      senderName: 'Московская консерватория',
-      content: 'Объявляется набор на новый курс по скрипке',
-      timestamp: Date.now() - 7200000,
-      type: 'text',
-      read: true,
-    },
-    {
-      id: 'msg-7',
-      chatId: 'chat-3',
-      senderId: 'inst-1',
-      senderName: 'Московская консерватория',
-      content: 'Регистрация открыта на нашем сайте',
-      timestamp: Date.now() - 7200000,
-      type: 'text',
+      type: "text",
       read: false,
     },
   ],
@@ -137,13 +75,13 @@ const initialState: ChatState = {
   loading: false,
   error: null,
   filter: {
-    type: 'all',
-    searchQuery: '',
+    type: "all",
+    searchQuery: "",
   },
 };
 
 const chatSlice = createSlice({
-  name: 'chats',
+  name: "chats",
   initialState,
   reducers: {
     // Установить текущий чат
@@ -164,7 +102,7 @@ const chatSlice = createSlice({
     // Добавить новое сообщение
     addMessage: (
       state,
-      action: PayloadAction<{ chatId: string; message: Message }>
+      action: PayloadAction<{ chatId: string; message: Message }>,
     ) => {
       const { chatId, message } = action.payload;
 
@@ -189,7 +127,7 @@ const chatSlice = createSlice({
         participantId: string;
         participantName: string;
         participantAvatar?: string;
-      }>
+      }>,
     ) => {
       const { participantId, participantName, participantAvatar } =
         action.payload;
@@ -199,7 +137,7 @@ const chatSlice = createSlice({
         (c) =>
           c.type === ChatType.DIRECT &&
           c.participants.includes(participantId) &&
-          c.participants.includes('user-current')
+          c.participants.includes("user-current"),
       );
 
       if (existingChat) {
@@ -212,7 +150,7 @@ const chatSlice = createSlice({
         type: ChatType.DIRECT,
         name: participantName,
         avatar: participantAvatar,
-        participants: ['user-current', participantId],
+        participants: ["user-current", participantId],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
@@ -235,7 +173,7 @@ const chatSlice = createSlice({
         name: string;
         description?: string;
         participantIds: string[];
-      }>
+      }>,
     ) => {
       const { name, description, participantIds } = action.payload;
 
@@ -244,10 +182,10 @@ const chatSlice = createSlice({
         type: ChatType.GROUP,
         name,
         description,
-        participants: ['user-current', ...participantIds],
+        participants: ["user-current", ...participantIds],
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        admin: 'user-current',
+        admin: "user-current",
         membersCount: participantIds.length + 1,
         unreadCount: 0,
       };
@@ -258,23 +196,20 @@ const chatSlice = createSlice({
     },
 
     // Создать чат с учреждением
-    createInstitutionChat: (
+    createVenueChat: (
       state,
       action: PayloadAction<{
-        institutionId: string;
-        institutionName: string;
-        institutionLogo?: string;
-        category?: string;
-      }>
+        venueId: string;
+        venueName: string;
+        venueLogo?: string;
+        type?: string;
+      }>,
     ) => {
-      const { institutionId, institutionName, institutionLogo, category } =
-        action.payload;
+      const { venueId, venueName, venueLogo, type } = action.payload;
 
       // Проверить, существует ли уже такой чат
       const existingChat = state.chats.find(
-        (c) =>
-          c.type === ChatType.INSTITUTION &&
-          c.institution?.id === institutionId
+        (c) => c.type === ChatType.VENUE && c.Venue?.id === venueId,
       );
 
       if (existingChat) {
@@ -284,18 +219,18 @@ const chatSlice = createSlice({
 
       const newChat: Chat = {
         id: `chat-${Date.now()}`,
-        type: ChatType.INSTITUTION,
-        name: institutionName,
-        avatar: institutionLogo,
-        participants: ['user-current'],
+        type: ChatType.VENUE,
+        name: venueName,
+        avatar: venueLogo,
+        participants: ["user-current"],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
-        institution: {
-          id: institutionId,
-          name: institutionName,
-          logo: institutionLogo,
-          category,
+        Venue: {
+          id: venueId,
+          name: venueName,
+          logo: venueLogo,
+          type,
         },
       };
 
@@ -319,9 +254,9 @@ const chatSlice = createSlice({
     setFilter: (
       state,
       action: PayloadAction<{
-        type?: ChatType | 'all';
+        type?: ChatType | "all";
         searchQuery?: string;
-      }>
+      }>,
     ) => {
       if (action.payload.type !== undefined) {
         state.filter.type = action.payload.type;
@@ -348,7 +283,7 @@ export const {
   addMessage,
   createDirectChat,
   createGroupChat,
-  createInstitutionChat,
+  createVenueChat,
   deleteChat,
   setFilter,
   clearError,

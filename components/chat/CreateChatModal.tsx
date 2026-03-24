@@ -1,58 +1,49 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useAppDispatch } from '@/store/hooks';
+import React, { useState } from "react";
+import { useAppDispatch } from "@/store/hooks";
+import { musicians, venues } from "@/lib/mock-data";
 import {
   createDirectChat,
   createGroupChat,
-  createInstitutionChat,
-} from '@/store/slices/chatSlice';
+  createVenueChat,
+} from "@/store/slices/chatSlice";
 
 interface CreateChatModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type TabType = 'direct' | 'group' | 'institution';
-
-// Mock users for demonstration
-const mockUsers = [
-  { id: 'user-1', name: 'Иван Петров', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ivan' },
-  { id: 'user-2', name: 'Петр Иванов', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=petr' },
-  { id: 'user-3', name: 'Мария Сидорова', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria' },
-  { id: 'user-4', name: 'Анна Смирнова', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=anna' },
-  { id: 'user-5', name: 'Дмитрий Волков', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dmitry' },
-];
-
-const mockInstitutions = [
-  { id: 'inst-1', name: 'Московская консерватория', category: 'Образование' },
-  { id: 'inst-2', name: 'Филармония', category: 'Концертная площадка' },
-  { id: 'inst-3', name: 'Музыкальная школа №1', category: 'Образование' },
-  { id: 'inst-4', name: 'Опера и балет', category: 'Театр' },
-];
+const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+};
+type TabType = "direct" | "group" | "Venue";
 
 export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const dispatch = useAppDispatch();
-  const [tab, setTab] = useState<TabType>('direct');
+  const [tab, setTab] = useState<TabType>("direct");
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [groupName, setGroupName] = useState('');
-  const [selectedInstitution, setSelectedInstitution] = useState<string | null>(null);
+  const [groupName, setGroupName] = useState("");
+  const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
 
   const handleCreateDirectChat = () => {
     if (!selectedUser) return;
 
-    const user = mockUsers.find((u) => u.id === selectedUser);
+    const user = musicians.find((u) => u.id.toString() === selectedUser);
     if (user) {
       dispatch(
         createDirectChat({
-          participantId: user.id,
+          participantId: user.id.toString(),
           participantName: user.name,
-          participantAvatar: user.avatar,
-        })
+          participantAvatar: user.avatar || getInitials(user.name),
+        }),
       );
       handleClose();
     }
@@ -65,33 +56,33 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
       createGroupChat({
         name: groupName,
         participantIds: selectedUsers,
-      })
+      }),
     );
     handleClose();
   };
 
-  const handleCreateInstitutionChat = () => {
-    if (!selectedInstitution) return;
+  const handleCreateVenueChat = () => {
+    if (!selectedVenue) return;
 
-    const institution = mockInstitutions.find((i) => i.id === selectedInstitution);
-    if (institution) {
+    const venue = venues.find((i) => i.id === selectedVenue);
+    if (venue) {
       dispatch(
-        createInstitutionChat({
-          institutionId: institution.id,
-          institutionName: institution.name,
-          category: institution.category,
-        })
+        createVenueChat({
+          venueId: venue.id,
+          venueName: venue.name,
+          type: venue.type,
+        }),
       );
       handleClose();
     }
   };
 
   const handleClose = () => {
-    setTab('direct');
+    setTab("direct");
     setSelectedUser(null);
     setSelectedUsers([]);
-    setGroupName('');
-    setSelectedInstitution(null);
+    setGroupName("");
+    setSelectedVenue(null);
     onClose();
   };
 
@@ -99,7 +90,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
     setSelectedUsers((prev) =>
       prev.includes(userId)
         ? prev.filter((id) => id !== userId)
-        : [...prev, userId]
+        : [...prev, userId],
     );
   };
 
@@ -122,31 +113,31 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           <button
-            onClick={() => setTab('direct')}
+            onClick={() => setTab("direct")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              tab === 'direct'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+              tab === "direct"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Диалог
           </button>
           <button
-            onClick={() => setTab('group')}
+            onClick={() => setTab("group")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              tab === 'group'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+              tab === "group"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Группа
           </button>
           <button
-            onClick={() => setTab('institution')}
+            onClick={() => setTab("Venue")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              tab === 'institution'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+              tab === "Venue"
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Учреждение
@@ -155,16 +146,16 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
-          {tab === 'direct' && (
+          {tab === "direct" && (
             <div className="space-y-2">
-              {mockUsers.map((user) => (
+              {musicians.map((user) => (
                 <button
                   key={user.id}
-                  onClick={() => setSelectedUser(user.id)}
+                  onClick={() => setSelectedUser(user.id.toString())}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    selectedUser === user.id
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50 border border-transparent'
+                    selectedUser === user.id.toString()
+                      ? "bg-blue-50 border border-blue-200"
+                      : "hover:bg-gray-50 border border-transparent"
                   }`}
                 >
                   <img
@@ -178,7 +169,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
             </div>
           )}
 
-          {tab === 'group' && (
+          {tab === "group" && (
             <div className="space-y-4">
               <input
                 type="text"
@@ -191,15 +182,15 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
                 <p className="text-sm font-medium text-gray-700">
                   Участники ({selectedUsers.length})
                 </p>
-                {mockUsers.map((user) => (
+                {musicians.map((user) => (
                   <label
                     key={user.id}
                     className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={() => toggleUserSelection(user.id)}
+                      checked={selectedUsers.includes(user.id.toString())}
+                      onChange={() => toggleUserSelection(user.id.toString())}
                       className="w-4 h-4"
                     />
                     <img
@@ -214,20 +205,20 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
             </div>
           )}
 
-          {tab === 'institution' && (
+          {tab === "Venue" && (
             <div className="space-y-2">
-              {mockInstitutions.map((institution) => (
+              {venues.map((Venue) => (
                 <button
-                  key={institution.id}
-                  onClick={() => setSelectedInstitution(institution.id)}
+                  key={Venue.id}
+                  onClick={() => setSelectedVenue(Venue.id)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    selectedInstitution === institution.id
-                      ? 'bg-blue-50 border border-blue-200'
-                      : 'hover:bg-gray-50 border border-transparent'
+                    selectedVenue === Venue.id
+                      ? "bg-blue-50 border border-blue-200"
+                      : "hover:bg-gray-50 border border-transparent"
                   }`}
                 >
-                  <p className="font-medium text-gray-900">{institution.name}</p>
-                  <p className="text-xs text-gray-600 mt-1">{institution.category}</p>
+                  <p className="font-medium text-gray-900">{Venue.name}</p>
+                  <p className="text-xs text-gray-600 mt-1">{Venue.type}</p>
                 </button>
               ))}
             </div>
@@ -244,16 +235,17 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
           </button>
           <button
             onClick={
-              tab === 'direct'
+              tab === "direct"
                 ? handleCreateDirectChat
-                : tab === 'group'
+                : tab === "group"
                   ? handleCreateGroupChat
-                  : handleCreateInstitutionChat
+                  : handleCreateVenueChat
             }
             disabled={
-              (tab === 'direct' && !selectedUser) ||
-              (tab === 'group' && (!groupName.trim() || selectedUsers.length === 0)) ||
-              (tab === 'institution' && !selectedInstitution)
+              (tab === "direct" && !selectedUser) ||
+              (tab === "group" &&
+                (!groupName.trim() || selectedUsers.length === 0)) ||
+              (tab === "Venue" && !selectedVenue)
             }
             className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium text-sm"
           >

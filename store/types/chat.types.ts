@@ -1,8 +1,8 @@
 // Chat Types
 export enum ChatType {
-  DIRECT = 'direct', // 1-1 чат между пользователями
-  GROUP = 'group', // Групповой чат
-  INSTITUTION = 'institution', // Чат с учреждением
+  DIRECT = "direct", // 1-1 чат между пользователями
+  GROUP = "group", // Групповой чат
+  VENUE = "venue", // Чат с учреждением
 }
 
 export interface User {
@@ -10,15 +10,15 @@ export interface User {
   name: string;
   avatar?: string;
   email?: string;
-  status?: 'online' | 'offline' | 'away';
+  status?: "online" | "offline" | "away";
 }
 
-export interface Institution {
+export interface Venue {
   id: string;
   name: string;
   logo?: string;
   email?: string;
-  category?: string;
+  type?: string;
 }
 
 export interface Message {
@@ -29,7 +29,7 @@ export interface Message {
   senderAvatar?: string;
   content: string;
   timestamp: number;
-  type: 'text'; // Для будущего расширения: 'image', 'video', 'audio'
+  type: "text"; // Для будущего расширения: 'image', 'video', 'audio'
   read?: boolean;
 }
 
@@ -53,8 +53,8 @@ export interface Chat {
   admin?: string; // ID администратора группы
   membersCount?: number;
 
-  // Для INSTITUTION
-  institution?: Institution; // Данные учреждения
+  // Для Venue
+  Venue?: Venue; // Данные учреждения
 }
 
 export interface ChatState {
@@ -64,7 +64,7 @@ export interface ChatState {
   loading: boolean;
   error: string | null;
   filter: {
-    type: ChatType | 'all';
+    type: ChatType | "all";
     searchQuery: string;
   };
 }
