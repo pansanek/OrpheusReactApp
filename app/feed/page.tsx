@@ -1,39 +1,30 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-import { posts, getMusicianById } from "@/lib/mock-data";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  ImageIcon,
-  Video,
-  Music,
-  MoreHorizontal,
-} from "lucide-react";
+import { useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { posts, getMusicianById } from '@/lib/mock-data';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Heart, MessageCircle, Share2, ImageIcon, 
+  Video, Music, MoreHorizontal 
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 export default function FeedPage() {
   const { currentUser } = useAuth();
-  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostContent, setNewPostContent] = useState('');
 
   const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   const formatTimeAgo = (timestamp: string) => {
@@ -47,14 +38,12 @@ export default function FeedPage() {
     if (days > 0) return `${days} дн. назад`;
     if (hours > 0) return `${hours} ч. назад`;
     if (minutes > 0) return `${minutes} мин. назад`;
-    return "Только что";
+    return 'Только что';
   };
 
-  const PostCard = ({ post }: { post: (typeof posts)[0] }) => {
+  const PostCard = ({ post }: { post: typeof posts[0] }) => {
     const author = getMusicianById(post.authorId);
-    const [isLiked, setIsLiked] = useState(
-      currentUser ? post.likes.includes(currentUser.id) : false,
-    );
+    const [isLiked, setIsLiked] = useState(currentUser ? post.likes.includes(currentUser.id) : false);
     const [likesCount, setLikesCount] = useState(post.likes.length);
     const [showComments, setShowComments] = useState(false);
 
@@ -63,7 +52,7 @@ export default function FeedPage() {
     const handleLike = () => {
       if (!currentUser) return;
       setIsLiked(!isLiked);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
     };
 
     return (
@@ -79,7 +68,7 @@ export default function FeedPage() {
                 </Avatar>
               </Link>
               <div>
-                <Link
+                <Link 
                   href={`/profile/${author.id}`}
                   className="font-medium text-foreground hover:text-primary transition-colors"
                 >
@@ -90,7 +79,7 @@ export default function FeedPage() {
                 </p>
               </div>
             </div>
-
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -100,34 +89,30 @@ export default function FeedPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>Сохранить</DropdownMenuItem>
                 <DropdownMenuItem>Скопировать ссылку</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">
-                  Пожаловаться
-                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">Пожаловаться</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </CardHeader>
-
+        
         <CardContent className="pt-0">
           <p className="text-foreground whitespace-pre-wrap mb-4">
             {post.content}
           </p>
-
+          
           {/* Actions */}
           <div className="flex items-center gap-1 pt-3 border-t border-border">
-            <Button
-              variant="ghost"
-              size="sm"
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={handleLike}
-              className={isLiked ? "text-warning" : ""}
+              className={isLiked ? 'text-warning' : ''}
             >
-              <Heart
-                className={`h-4 w-4 mr-1.5 ${isLiked ? "fill-warning" : ""}`}
-              />
+              <Heart className={`h-4 w-4 mr-1.5 ${isLiked ? 'fill-warning' : ''}`} />
               {likesCount}
             </Button>
-            <Button
-              variant="ghost"
+            <Button 
+              variant="ghost" 
               size="sm"
               onClick={() => setShowComments(!showComments)}
             >
@@ -143,7 +128,7 @@ export default function FeedPage() {
           {/* Comments */}
           {showComments && post.comments.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border space-y-3">
-              {post.comments.map((comment) => {
+              {post.comments.map(comment => {
                 const commentAuthor = getMusicianById(comment.userId);
                 if (!commentAuthor) return null;
                 return (
@@ -185,7 +170,7 @@ export default function FeedPage() {
               </Avatar>
               <div className="flex-1">
                 <Textarea
-                  placeholder={`Что нового, ${currentUser.name.split(" ")[0]}?`}
+                  placeholder={`Что нового, ${currentUser.name.split(' ')[0]}?`}
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   className="min-h-[80px] resize-none border-0 p-0 focus-visible:ring-0 bg-transparent"
@@ -217,7 +202,7 @@ export default function FeedPage() {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {posts.map((post) => (
+        {posts.map(post => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>

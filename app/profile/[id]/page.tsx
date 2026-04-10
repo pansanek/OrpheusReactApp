@@ -1,21 +1,55 @@
 'use client';
 
-import { use } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { getMusicianById, getGroupsByMusicianId, getPostsByAuthorId, AI_TAG_CATEGORIES } from '@/lib/mock-data';
+import { getMusicianById, getGroupsByMusicianId, getPostsByAuthorId, AI_TAG_CATEGORIES, groups, INSTRUMENTS, GENRES } from '@/lib/mock-data';
 import { useAuth } from '@/lib/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, MapPin, Music, Users, Newspaper, MessageCircle, UserPlus, Sparkles } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import {
+  Star, MapPin, Music, Users, Newspaper, MessageCircle,
+  UserPlus, Sparkles, Plus, ChevronRight, Crown
+} from 'lucide-react';
 
-export default function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const { currentUser } = useAuth();
+export default function PublicProfilePage({ params }: { params: { id: string } }) {
+  const { id } = params;
+  const { currentUser, sendGroupInvite } = useAuth();
   const musicianId = parseInt(id);
   const musician = getMusicianById(musicianId);
+
+  // Invite dialog state
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [creatingNew, setCreatingNew] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupGenre, setNewGroupGenre] = useState('');
+  const [newGroupDescription, setNewGroupDescription] = useState('');
+  const [position, setPosition] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
 
   if (!musician) {
     return (
@@ -29,15 +63,17 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // Redirect to own profile page if viewing own profile
   const isOwnProfile = currentUser?.id === musician.id;
-
   const userGroups = getGroupsByMusicianId(musician.id);
   const userPosts = getPostsByAuthorId(musician.id);
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
+  // Current user's groups (as creator or member)
+  const myGroups = currentUser
+    ? groups.filter(g => g.members.includes(currentUser.id))
+    : [];
+
+  const getInitials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').toUpperCase();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,6 +110,58 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
     return cat?.color || '#6C757D';
   };
 
+  const handleOpenInvite = () => {
+    // Auto-select if user has exactly one group
+    if (myGroups.length === 1) {
+      setSelectedGroupId(myGroups[0].id);
+      setCreatingNew(false);
+    } else if (myGroups.length === 0) {
+      setCreatingNew(true);
+    }
+    setInviteOpen(true);
+  };
+
+  const handleInviteSubmit = () => {
+    if (!currentUser) return;
+    if (!creatingNew && !selectedGroupId) {
+      toast({ title: 'Выберите группу', variant: 'destructive' });
+      return;
+    }
+    if (creatingNew && !newGroupName.trim()) {
+      toast({ title: 'Укажите название группы', variant: 'destructive' });
+      return;
+    }
+    if (!position.trim()) {
+      toast({ title: 'Укажите позицию', variant: 'destructive' });
+      return;
+    }
+
+    sendGroupInvite({
+      toUserId: musician.id,
+      groupId: creatingNew ? null : selectedGroupId,
+      newGroupData: creatingNew
+        ? { name: newGroupName, genre: newGroupGenre, description: newGroupDescription }
+        : undefined,
+      position,
+      message: inviteMessage,
+    });
+
+    toast({
+      title: 'Приглашение отправлено!',
+      description: `${musician.name} получит уведомление с вашим приглашением.`,
+    });
+
+    // Reset
+    setInviteOpen(false);
+    setSelectedGroupId(null);
+    setCreatingNew(false);
+    setNewGroupName('');
+    setNewGroupGenre('');
+    setNewGroupDescription('');
+    setPosition('');
+    setInviteMessage('');
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Profile Header */}
@@ -86,25 +174,25 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                   {getInitials(musician.name)}
                 </AvatarFallback>
               </Avatar>
-              <span className={`absolute bottom-1 right-1 w-5 h-5 ${getStatusColor(musician.status)} border-3 border-card rounded-full`} />
+              <span className={`absolute bottom-1 right-1 w-5 h-5 ${getStatusColor(musician.status)} border-2 border-card rounded-full`} />
             </div>
-            
+
             <div className="flex-1">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">{musician.name}</h1>
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
                     <span className={`w-2 h-2 rounded-full ${getStatusColor(musician.status)}`} />
                     {getStatusText(musician.status)}
                   </p>
                 </div>
                 {!isOwnProfile && currentUser && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button variant="outline" size="sm">
                       <MessageCircle className="h-4 w-4 mr-1.5" />
                       Написать
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handleOpenInvite}>
                       <UserPlus className="h-4 w-4 mr-1.5" />
                       В группу
                     </Button>
@@ -116,8 +204,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                   </Button>
                 )}
               </div>
-              
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-4">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4" />
                   {musician.location}
@@ -135,7 +223,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                   ))}
                 </span>
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mb-4">
                 {musician.genres.map(genre => (
                   <Badge key={genre} className={getGenreColor(genre)}>
@@ -143,10 +231,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                   </Badge>
                 ))}
               </div>
-              
-              {musician.bio && (
-                <p className="text-foreground">{musician.bio}</p>
-              )}
+
+              {musician.bio && <p className="text-foreground">{musician.bio}</p>}
             </div>
           </div>
         </CardContent>
@@ -167,9 +253,9 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
                 <Badge
                   key={tag.id}
                   variant="outline"
-                  style={{ 
+                  style={{
                     borderColor: getTagCategoryColor(tag.category),
-                    color: getTagCategoryColor(tag.category)
+                    color: getTagCategoryColor(tag.category),
                   }}
                   className="rounded-full"
                 >
@@ -181,7 +267,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
         </Card>
       )}
 
-      {/* Tabs: Groups and Posts */}
+      {/* Tabs */}
       <Tabs defaultValue="groups">
         <TabsList className="mb-4">
           <TabsTrigger value="groups" className="gap-2">
@@ -193,7 +279,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
             Посты ({userPosts.length})
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="groups">
           {userGroups.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -232,7 +318,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
             </Card>
           )}
         </TabsContent>
-        
+
         <TabsContent value="posts">
           {userPosts.length > 0 ? (
             <div className="space-y-4">
@@ -259,6 +345,170 @@ export default function PublicProfilePage({ params }: { params: Promise<{ id: st
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Invite to Group Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Пригласить в группу</DialogTitle>
+            <DialogDescription>
+              Выберите свою группу или создайте новую, укажите позицию для{' '}
+              <span className="font-medium text-foreground">{musician.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-2">
+            {/* Group selection */}
+            {!creatingNew ? (
+              <div className="grid gap-2">
+                <Label>Группа</Label>
+                {myGroups.length > 1 ? (
+                  <div className="grid gap-2">
+                    {myGroups.map(g => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setSelectedGroupId(g.id)}
+                        className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
+                          selectedGroupId === g.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">
+                            {g.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm text-foreground">{g.name}</p>
+                          <p className="text-xs text-muted-foreground">{g.genre} · {g.members.length} участн.</p>
+                        </div>
+                        {selectedGroupId === g.id && (
+                          <ChevronRight className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : myGroups.length === 1 ? (
+                  <div className="flex items-center gap-3 p-3 rounded-lg border border-primary bg-primary/5">
+                    <Avatar className="h-9 w-9 shrink-0">
+                      <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">
+                        {myGroups[0].name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-foreground">{myGroups[0].name}</p>
+                      <p className="text-xs text-muted-foreground">{myGroups[0].genre} · {myGroups[0].members.length} участн.</p>
+                    </div>
+                    <Crown className="h-4 w-4 text-warning shrink-0" />
+                  </div>
+                ) : null}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 mt-1 bg-transparent"
+                  onClick={() => { setCreatingNew(true); setSelectedGroupId(null); }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Создать новую группу
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-3 p-3 rounded-lg border border-dashed border-primary/50 bg-primary/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground">Новая группа</p>
+                  {myGroups.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => { setCreatingNew(false); setSelectedGroupId(myGroups[0].id); }}
+                    >
+                      Выбрать существующую
+                    </Button>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="new-group-name">Название</Label>
+                  <Input
+                    id="new-group-name"
+                    placeholder="Название группы"
+                    value={newGroupName}
+                    onChange={e => setNewGroupName(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="new-group-genre">Жанр</Label>
+                  <Select value={newGroupGenre} onValueChange={setNewGroupGenre}>
+                    <SelectTrigger id="new-group-genre">
+                      <SelectValue placeholder="Выберите жанр" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GENRES.map(g => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="new-group-desc">Описание</Label>
+                  <Textarea
+                    id="new-group-desc"
+                    placeholder="Краткое описание группы"
+                    rows={2}
+                    value={newGroupDescription}
+                    onChange={e => setNewGroupDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Position */}
+            <div className="grid gap-2">
+              <Label htmlFor="position">Позиция / инструмент</Label>
+              <Select value={position} onValueChange={setPosition}>
+                <SelectTrigger id="position">
+                  <SelectValue placeholder="Выберите инструмент" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INSTRUMENTS.map(inst => (
+                    <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                  ))}
+                  <SelectItem value="Вокал">Вокал</SelectItem>
+                  <SelectItem value="Продюсер">Продюсер</SelectItem>
+                  <SelectItem value="Звукорежиссёр">Звукорежиссёр</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Message */}
+            <div className="grid gap-2">
+              <Label htmlFor="invite-message">Сообщение</Label>
+              <Textarea
+                id="invite-message"
+                placeholder="Напишите пару слов о группе или почему хотите пригласить..."
+                rows={3}
+                value={inviteMessage}
+                onChange={e => setInviteMessage(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)}>
+              Отмена
+            </Button>
+            <Button onClick={handleInviteSubmit} disabled={!position}>
+              <UserPlus className="h-4 w-4 mr-1.5" />
+              Отправить приглашение
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
