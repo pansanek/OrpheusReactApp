@@ -25,7 +25,7 @@ interface SidebarProps {
 
 const navItems = [
   { href: '/feed', label: 'Лента', icon: Newspaper },
-  { href: '/search', label: 'Поиск музыкантов', icon: Search },
+  { href: '/search', label: 'Поиск', icon: Search },
   { href: '/groups', label: 'Группы', icon: Users },
   { href: '/venues', label: 'Учреждения', icon: MapPin },
   { href: '/ai-tags', label: 'Теги ИИ', icon: Sparkles },

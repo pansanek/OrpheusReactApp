@@ -61,7 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Поиск музыкантов, групп..."
+                placeholder="Поиск участников, групп, учреждений..."
                 className="pl-10 bg-muted border-0"
               />
             </div>

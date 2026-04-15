@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Chat, ChatType } from '@/store/types/chat.types';
-import { formatDistanceToNow } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { Users, Building2, CheckCheck, Check } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import React from "react";
+import { Chat, ChatType } from "@/store/types/chat.types";
+import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { Users, Building2, CheckCheck, Check } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 interface ChatListItemProps {
   chat: Chat;
@@ -26,7 +26,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
     switch (chat.type) {
       case ChatType.GROUP:
         return <Users className="h-5 w-5" />;
-      case ChatType.INSTITUTION:
+      case ChatType.VENUE:
         return <Building2 className="h-5 w-5" />;
       default:
         return null;
@@ -34,18 +34,18 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   };
 
   const getTimeString = () => {
-    if (!chat.lastMessage) return '';
+    if (!chat.lastMessage) return "";
     const date = new Date(chat.lastMessage.timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
+      return date.toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
       });
     }
-    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
   };
 
   const isUnread = (chat.unreadCount || 0) > 0;
@@ -53,14 +53,14 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   return (
     <div
       className={cn(
-        'flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50 group',
-        isActive && 'bg-accent'
+        "flex gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50 group",
+        isActive && "bg-accent",
       )}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           onClick();
         }
       }}
@@ -68,7 +68,10 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={chat.avatar || "/placeholder.svg"} alt={chat.name} />
+          <AvatarImage
+            src={chat.avatar || "/placeholder.svg"}
+            alt={chat.name}
+          />
           <AvatarFallback className="bg-primary/10 text-primary">
             {chat.type === ChatType.DIRECT
               ? chat.name.charAt(0).toUpperCase()
@@ -76,9 +79,10 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           </AvatarFallback>
         </Avatar>
         {/* Online status for direct chats */}
-        {chat.type === ChatType.DIRECT && chat.participantUser?.status === 'online' && (
-          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
-        )}
+        {chat.type === ChatType.DIRECT &&
+          chat.participantUser?.status === "online" && (
+            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
+          )}
       </div>
 
       {/* Chat info */}
@@ -87,8 +91,10 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
         <div className="flex items-baseline justify-between gap-2">
           <h3
             className={cn(
-              'text-sm truncate',
-              isUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground'
+              "text-sm truncate",
+              isUnread
+                ? "font-semibold text-foreground"
+                : "font-medium text-foreground",
             )}
           >
             {chat.name}
@@ -102,13 +108,15 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
         <div className="flex items-center gap-2">
           <p
             className={cn(
-              'text-sm truncate flex-1',
-              isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
+              "text-sm truncate flex-1",
+              isUnread
+                ? "text-foreground font-medium"
+                : "text-muted-foreground",
             )}
           >
             {chat.lastMessage ? (
               <>
-                {chat.lastMessage.senderId === 'user-current' && (
+                {chat.lastMessage.senderId === "user-current" && (
                   <span className="inline-flex items-center gap-1 mr-1">
                     {chat.lastMessage.read ? (
                       <CheckCheck className="h-3 w-3 text-primary" />
@@ -120,14 +128,17 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
                 {chat.lastMessage.content}
               </>
             ) : (
-              <span className="italic">{'Нет сообщений'}</span>
+              <span className="italic">{"Нет сообщений"}</span>
             )}
           </p>
 
           {/* Unread badge */}
           {isUnread && (
-            <Badge variant="default" className="h-5 min-w-[20px] px-1.5 text-xs">
-              {chat.unreadCount! > 99 ? '99+' : chat.unreadCount}
+            <Badge
+              variant="default"
+              className="h-5 min-w-[20px] px-1.5 text-xs"
+            >
+              {chat.unreadCount! > 99 ? "99+" : chat.unreadCount}
             </Badge>
           )}
         </div>
@@ -135,7 +146,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
         {/* Additional info for groups/institutions */}
         {chat.type === ChatType.GROUP && chat.membersCount && (
           <p className="text-xs text-muted-foreground">
-            {chat.membersCount} {'участников'}
+            {chat.membersCount} {"участников"}
           </p>
         )}
       </div>

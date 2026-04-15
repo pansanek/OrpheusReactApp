@@ -1,85 +1,88 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 @custom-variant dark (&:is(.dark *));
 
 /* UMPSM - Social Network for Musicians */
 :root {
   /* Light Background Palette */
-  --background: #F8F9FA;
-  --foreground: #212529;
-  --card: #FFFFFF;
+  --background: #f8f9fa;
+  --foreground: #111111;
+  --card: #ffffff;
   --card-foreground: #212529;
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #212529;
-  
+
   /* Primary - Deep Blue */
-  --primary: #4361EE;
-  --primary-foreground: #FFFFFF;
-  
+  --primary: #161616;
+  --primary-foreground: #ffffff;
+
   /* Secondary - Purple-blue */
-  --secondary: #3A0CA3;
-  --secondary-foreground: #FFFFFF;
-  
+  --secondary: #1e1d1f;
+  --secondary-foreground: #ffffff;
+
   /* Muted for subtle elements */
-  --muted: #F8F9FA;
-  --muted-foreground: #6C757D;
-  
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
+
   /* Accent - Cyan */
-  --accent: #4CC9F0;
+  --accent: #333333;
   --accent-foreground: #212529;
-  
+
   /* Destructive - Purple */
-  --destructive: #7209B7;
-  --destructive-foreground: #FFFFFF;
-  
+  --destructive: #383838;
+  --destructive-foreground: #ffffff;
+
   /* Success/Warning colors */
-  --success: #4CC9F0;
+  --success: #88f04c;
   --success-foreground: #212529;
-  --warning: #F72585;
-  --warning-foreground: #FFFFFF;
-  
+  --warning: #f72525;
+  --warning-foreground: #ffffff;
+
   /* Borders and inputs */
-  --border: #E9ECEF;
-  --input: #E9ECEF;
-  --ring: #4361EE;
+  --border: #e9ecef;
+  --input: #e9ecef;
+  --ring: #272727;
   --radius: 0.75rem;
-  
+
   /* Sidebar */
-  --sidebar: #F8F9FA;
+  --sidebar: #f8f9fa;
   --sidebar-foreground: #212529;
-  --sidebar-primary: #4361EE;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #E9ECEF;
+  --sidebar-primary: #1b1b1b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e9ecef;
   --sidebar-accent-foreground: #212529;
-  --sidebar-border: #E9ECEF;
-  --sidebar-ring: #4361EE;
-  
+  --sidebar-border: #e9ecef;
+  --sidebar-ring: #1d1d1d;
+
   /* Charts */
-  --chart-1: #4361EE;
-  --chart-2: #3A0CA3;
-  --chart-3: #4CC9F0;
-  --chart-4: #F72585;
-  --chart-5: #7209B7;
-  
+  --chart-1: #4361ee;
+  --chart-2: #3a0ca3;
+  --chart-3: #4cc9f0;
+  --chart-4: #f72585;
+  --chart-5: #7209b7;
+
   /* Genre colors */
-  --genre-rock: #FF6B6B;
-  --genre-jazz: #4ECDC4;
-  --genre-classical: #FFD166;
-  --genre-electronic: #9D4EDD;
-  --genre-pop: #06D6A0;
-  --genre-hiphop: #118AB2;
-  
+  --genre-rock: #ff6b6b;
+  --genre-jazz: #4ecdc4;
+  --genre-classical: #ffd166;
+  --genre-electronic: #9d4edd;
+  --genre-pop: #06d6a0;
+  --genre-hiphop: #118ab2;
+
   /* Status colors */
-  --status-online: #06D6A0;
-  --status-offline: #6C757D;
-  --status-busy: #FF9E00;
-  --status-recording: #FF6B6B;
+  --status-online: #0648d6;
+  --status-offline: #6c757d;
+  --status-busy: #ff0000;
+  --status-recording: #ff6b6b;
 }
 
 @theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

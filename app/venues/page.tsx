@@ -1,65 +1,88 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { venues } from '@/lib/mock-data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
+import { BookingDialog } from "@/components/booking-dialog";
+import type { Venue } from "@/lib/mock-data";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { MapPin, Star, Search, Filter, Calendar, Clock, Mic2, Building2 } from 'lucide-react';
-
-const venueTypes = ['Все', 'студия', 'репетиционная база', 'концертный зал'];
+  MapPin,
+  Star,
+  Search,
+  Filter,
+  Calendar,
+  Mic2,
+  Building2,
+  Map,
+  List,
+} from "lucide-react";
+import { VenuesMap } from "@/components/venues/VenuesMap";
+const venueTypes = ["Все", "студия", "репетиционная база", "концертный зал"];
+type ViewMode = "list" | "map";
 
 export default function VenuesPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [venueType, setVenueType] = useState('Все');
-  const [selectedVenue, setSelectedVenue] = useState<typeof venues[0] | null>(null);
+  const { venuesState, currentUser } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [venueType, setVenueType] = useState("Все");
+  const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
-  const filteredVenues = venues.filter(venue => {
-    const matchesSearch = !searchQuery || 
+  const filteredVenues = venuesState.filter((venue) => {
+    const matchesSearch =
+      !searchQuery ||
       venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       venue.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = venueType === 'Все' || venue.type === venueType;
+    const matchesType = venueType === "Все" || venue.type === venueType;
     return matchesSearch && matchesType;
   });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'студия': return Mic2;
-      case 'концертный зал': return Building2;
-      default: return MapPin;
+      case "студия":
+        return Mic2;
+      case "концертный зал":
+        return Building2;
+      default:
+        return MapPin;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'студия': return 'bg-primary text-primary-foreground';
-      case 'концертный зал': return 'bg-secondary text-secondary-foreground';
-      case 'репетиционная база': return 'bg-accent text-accent-foreground';
-      default: return 'bg-muted text-muted-foreground';
+      case "студия":
+        return "bg-primary text-primary-foreground";
+      case "концертный зал":
+        return "bg-secondary text-secondary-foreground";
+      case "репетиционная база":
+        return "bg-accent text-accent-foreground";
+      default:
+        return "bg-muted text-muted-foreground";
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Каталог учреждений</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Каталог учреждений
+        </h1>
         <p className="text-muted-foreground">
           Найдите студию, репетиционную базу или концертную площадку
         </p>
@@ -79,14 +102,39 @@ export default function VenuesPage() {
                 className="pl-10"
               />
             </div>
+            {/* View Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="gap-2"
+                >
+                  <List className="h-4 w-4" />
+                  Список
+                </Button>
+                <Button
+                  variant={viewMode === "map" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("map")}
+                  className="gap-2"
+                >
+                  <Map className="h-4 w-4" />
+                  Карта
+                </Button>
+              </div>
+            </div>
             <Select value={venueType} onValueChange={setVenueType}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Тип учреждения" />
               </SelectTrigger>
               <SelectContent>
-                {venueTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type === 'Все' ? 'Все типы' : type}</SelectItem>
+                {venueTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type === "Все" ? "Все типы" : type}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -94,18 +142,21 @@ export default function VenuesPage() {
         </CardContent>
       </Card>
 
-      {/* Results count */}
       <p className="text-sm text-muted-foreground mb-4">
         Найдено: {filteredVenues.length} учреждений
       </p>
-
-      {/* Venues Grid */}
-      {filteredVenues.length > 0 ? (
+      {/* Map View */}
+      {viewMode === "map" ? (
+        <VenuesMap venues={filteredVenues} />
+      ) : filteredVenues.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2">
-          {filteredVenues.map(venue => {
+          {filteredVenues.map((venue) => {
             const TypeIcon = getTypeIcon(venue.type);
             return (
-              <Card key={venue.id} className="hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+              <Card
+                key={venue.id}
+                className="hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
@@ -125,14 +176,14 @@ export default function VenuesPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pt-0">
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                     {venue.description}
                   </p>
-                  
+
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {venue.equipment.slice(0, 3).map(eq => (
+                    {venue.equipment.slice(0, 3).map((eq) => (
                       <Badge key={eq} variant="outline" className="text-xs">
                         {eq}
                       </Badge>
@@ -143,7 +194,7 @@ export default function VenuesPage() {
                       </Badge>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     <div className="flex items-center gap-4">
                       <span className="flex items-center gap-1 text-sm">
@@ -151,59 +202,36 @@ export default function VenuesPage() {
                         {venue.rating}
                       </span>
                       <span className="text-sm font-medium text-foreground">
-                        {venue.pricePerHour.toLocaleString('ru-RU')} руб/час
+                        {venue.pricePerHour.toLocaleString("ru-RU")} руб/час
                       </span>
                     </div>
-                    
-                    <Button asChild variant="outline" size="sm" className="bg-transparent mr-2">
-                        <Link href={`/venues/${venue.id}`}>
-                          Подробнее
-                        </Link>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="bg-transparent"
+                      >
+                        <Link href={`/venues/${venue.id}`}>Подробнее</Link>
                       </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" onClick={() => setSelectedVenue(venue)}>
+                      {currentUser ? (
+                        <Button
+                          size="sm"
+                          onClick={() => setBookingVenue(venue)}
+                        >
                           <Calendar className="h-4 w-4 mr-1.5" />
                           Забронировать
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Бронирование: {venue.name}</DialogTitle>
-                          <DialogDescription>
-                            {venue.address}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <div>
-                            <label className="text-sm font-medium">Дата</label>
-                            <Input type="date" className="mt-1.5" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-sm font-medium">Время начала</label>
-                              <Input type="time" className="mt-1.5" />
-                            </div>
-                            <div>
-                              <label className="text-sm font-medium">Время окончания</label>
-                              <Input type="time" className="mt-1.5" />
-                            </div>
-                          </div>
-                          <div className="pt-4 border-t border-border">
-                            <div className="flex justify-between text-sm mb-2">
-                              <span className="text-muted-foreground">Стоимость за час:</span>
-                              <span className="font-medium">{venue.pricePerHour.toLocaleString('ru-RU')} руб</span>
-                            </div>
-                          </div>
-                          <Button className="w-full">
-                            Отправить заявку
-                          </Button>
-                          <p className="text-xs text-muted-foreground text-center">
-                            В MVP-версии бронирование симулируется
-                          </p>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                      ) : (
+                        <Button asChild size="sm">
+                          <Link href="/login">
+                            <Calendar className="h-4 w-4 mr-1.5" />
+                            Забронировать
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -222,6 +250,17 @@ export default function VenuesPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Single shared BookingDialog */}
+      {bookingVenue && (
+        <BookingDialog
+          open={bookingVenue !== null}
+          onOpenChange={(open) => {
+            if (!open) setBookingVenue(null);
+          }}
+          venue={bookingVenue}
+        />
       )}
     </div>
   );

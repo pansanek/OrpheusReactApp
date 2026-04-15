@@ -120,7 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateProfile = useCallback((data: Partial<Musician>) => {
-    setCurrentUser(prev => prev ? { ...prev, ...data } : null);
+    setCurrentUser(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...data };
+      setAllUsers(users => users.map(u => u.id === prev.id ? updated : u));
+      return updated;
+    });
   }, []);
 
   const updateGroup = useCallback((groupId: number, data: Partial<Group>) => {
@@ -159,10 +164,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let resolvedGroupName = '';
 
     if (params.groupId) {
-      const g = groups.find(g => g.id === params.groupId);
+      const g = groupsState.find(g => g.id === params.groupId);
       resolvedGroupName = g?.name ?? '';
     } else if (params.newGroupData) {
-      // Создаём "виртуальную" группу с временным id
       resolvedGroupId = Date.now();
       resolvedGroupName = params.newGroupData.name;
     }

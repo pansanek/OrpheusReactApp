@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useDispatch, useSelector } from 'react-redux';
-import { useMemo } from 'react';
-import type { RootState, AppDispatch } from './store';
-import { Chat, ChatType } from './types/chat.types';
+import { useDispatch, useSelector } from "react-redux";
+import { useMemo } from "react";
+import type { RootState, AppDispatch } from "./store";
+import { Chat, ChatType } from "./types/chat.types";
 
 // Типизированные версии useDispatch и useSelector
 export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector = <TSelected,>(
-  selector: (state: RootState) => TSelected
+export const useAppSelector = <TSelected>(
+  selector: (state: RootState) => TSelected,
 ) => useSelector<RootState, TSelected>(selector);
 
 // Хук для получения всех чатов с фильтром
@@ -19,7 +19,7 @@ export const useFilteredChats = () => {
   return useMemo(() => {
     return chats.filter((chat) => {
       // Фильтр по типу
-      if (filter.type !== 'all' && chat.type !== filter.type) {
+      if (filter.type !== "all" && chat.type !== filter.type) {
         return false;
       }
 
@@ -41,7 +41,7 @@ export const useCurrentChat = () => {
 
   return useMemo(
     () => chats.find((c) => c.id === currentChatId),
-    [chats, currentChatId]
+    [chats, currentChatId],
   );
 };
 
@@ -52,7 +52,7 @@ export const useCurrentChatMessages = () => {
 
   return useMemo(
     () => (currentChatId ? messages[currentChatId] || [] : []),
-    [messages, currentChatId]
+    [messages, currentChatId],
   );
 };
 
@@ -62,7 +62,7 @@ export const useChatsByType = (type: ChatType) => {
 
   return useMemo(
     () => chats.filter((chat) => chat.type === type),
-    [chats, type]
+    [chats, type],
   );
 };
 
@@ -72,7 +72,7 @@ export const useUnreadCount = () => {
 
   return useMemo(
     () => chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0),
-    [chats]
+    [chats],
   );
 };
 
@@ -88,5 +88,5 @@ export const useGroupChats = () => {
 
 // Хук для получения чатов с учреждениями
 export const useInstitutionChats = () => {
-  return useChatsByType(ChatType.INSTITUTION);
+  return useChatsByType(ChatType.VENUE);
 };

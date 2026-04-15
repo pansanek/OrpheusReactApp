@@ -709,46 +709,90 @@ export default function LoginPage() {
   // Экран входа
   if (mode === 'login') {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-xl">
+      <div className="min-h-[calc(100vh-4rem)] flex items-start justify-center px-4 py-10">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4">
               <Music className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">Вход в УМПСМ</h1>
-            <p className="text-muted-foreground text-sm">Выберите профиль для демонстрации (MVP)</p>
+            <h1 className="text-2xl font-bold text-foreground">Вход в УМПСМ</h1>
+            <p className="text-muted-foreground text-sm mt-1">Социальная сеть для музыкантов</p>
+          </div>
+
+          {/* Email/password form */}
+          <Card className="mb-4">
+            <CardContent className="pt-6 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="login-email">Email</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  autoComplete="email"
+                />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="login-password">Пароль</Label>
+                  <button className="text-xs text-primary hover:underline">
+                    Забыли пароль?
+                  </button>
+                </div>
+                <Input
+                  id="login-password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+              </div>
+              <Button className="w-full mt-2" size="lg">
+                Войти
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="text-center text-sm text-muted-foreground mb-8">
+            Нет аккаунта?{' '}
+            <button
+              className="text-primary font-medium hover:underline"
+              onClick={() => { setMode('register'); setStep('role'); setSelectedRole(null); setBase(emptyBase); }}
+            >
+              Зарегистрироваться
+            </button>
+          </div>
+
+          {/* Demo accounts */}
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <Separator />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-3 text-xs text-muted-foreground">
+                Тестовые аккаунты (MVP)
+              </span>
+            </div>
           </div>
 
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Войти как</CardTitle>
-                  <CardDescription className="mt-1">Нажмите на карточку для входа</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => { setMode('register'); setStep('role'); setSelectedRole(null); setBase(emptyBase); }}>
-                  Регистрация
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-2.5 sm:grid-cols-2">
+            <CardContent className="pt-4 pb-4">
+              <div className="grid gap-2">
                 {allUsers.map(user => {
                   const RoleIcon = ROLE_ICONS[user.role] ?? Music;
                   return (
                     <button
                       key={user.id}
                       onClick={() => handleLogin(user.id)}
-                      className="flex items-start gap-3 p-3.5 rounded-xl border border-border bg-card hover:bg-muted hover:border-primary/50 transition-all text-left w-full group"
+                      className="flex items-center gap-3 p-2.5 rounded-lg border border-border bg-card hover:bg-muted hover:border-primary/50 transition-all text-left w-full"
                     >
                       <div className="relative shrink-0">
-                        <Avatar className="h-11 w-11">
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                             {getInitials(user.name)}
                           </AvatarFallback>
                         </Avatar>
                         <span className={cn(
-                          'absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-card',
+                          'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card',
                           user.status === 'online' ? 'bg-[var(--status-online)]' :
                           user.status === 'busy' ? 'bg-[var(--status-busy)]' :
                           user.status === 'recording' ? 'bg-[var(--status-recording)]' :
@@ -757,16 +801,13 @@ export default function LoginPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground text-sm truncate">{user.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user.location}</p>
-                        <div className="mt-1.5 flex items-center gap-1.5">
-                          <span className={cn(
-                            'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium',
-                            getRoleColor(user.role)
-                          )}>
-                            <RoleIcon className="h-3 w-3" />
-                            {getRoleBadgeLabel(user.role)}
-                          </span>
-                        </div>
+                        <span className={cn(
+                          'inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full border font-medium',
+                          getRoleColor(user.role)
+                        )}>
+                          <RoleIcon className="h-2.5 w-2.5" />
+                          {getRoleBadgeLabel(user.role)}
+                        </span>
                       </div>
                     </button>
                   );

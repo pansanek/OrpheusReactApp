@@ -1,4 +1,4 @@
-import { Chat, ChatType, Message } from '@/store/types/chat.types';
+import { Chat, ChatType, Message } from "@/store/types/chat.types";
 
 /**
  * Форматирует название чата в зависимости от типа
@@ -9,8 +9,8 @@ export const formatChatName = (chat: Chat): string => {
       return chat.participantUser?.name || chat.name;
     case ChatType.GROUP:
       return `${chat.name} (${chat.membersCount} участников)`;
-    case ChatType.INSTITUTION:
-      return `${chat.institution?.name || chat.name}${chat.institution?.category ? ` - ${chat.institution.category}` : ''}`;
+    case ChatType.VENUE:
+      return `${chat.Venue?.name || chat.name}${chat.Venue?.type ? ` - ${chat.Venue?.type}` : ""}`;
     default:
       return chat.name;
   }
@@ -22,13 +22,13 @@ export const formatChatName = (chat: Chat): string => {
 export const getChatIcon = (chat: Chat): string => {
   switch (chat.type) {
     case ChatType.DIRECT:
-      return '👤';
+      return "👤";
     case ChatType.GROUP:
-      return '👥';
-    case ChatType.INSTITUTION:
-      return '🏛️';
+      return "👥";
+    case ChatType.VENUE:
+      return "🏛️";
     default:
-      return '💬';
+      return "💬";
   }
 };
 
@@ -38,13 +38,13 @@ export const getChatIcon = (chat: Chat): string => {
 export const getChatAvatarColor = (chatType: ChatType): string => {
   switch (chatType) {
     case ChatType.DIRECT:
-      return 'from-blue-400 to-cyan-400';
+      return "from-blue-400 to-cyan-400";
     case ChatType.GROUP:
-      return 'from-purple-400 to-pink-400';
-    case ChatType.INSTITUTION:
-      return 'from-amber-400 to-orange-400';
+      return "from-purple-400 to-pink-400";
+    case ChatType.VENUE:
+      return "from-amber-400 to-orange-400";
     default:
-      return 'from-gray-400 to-gray-500';
+      return "from-gray-400 to-gray-500";
   }
 };
 
@@ -59,15 +59,15 @@ export const formatMessageTime = (timestamp: number): string => {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return 'Сейчас';
+  if (minutes < 1) return "Сейчас";
   if (minutes < 60) return `${minutes}м назад`;
   if (hours < 24) return `${hours}ч назад`;
   if (days < 7) return `${days}д назад`;
 
   const date = new Date(timestamp);
-  return date.toLocaleDateString('ru-RU', {
-    month: 'short',
-    day: 'numeric',
+  return date.toLocaleDateString("ru-RU", {
+    month: "short",
+    day: "numeric",
   });
 };
 
@@ -75,26 +75,26 @@ export const formatMessageTime = (timestamp: number): string => {
  * Получает статус "Печатает..."
  */
 export const getTypingIndicator = (names: string[]): string => {
-  if (names.length === 0) return '';
+  if (names.length === 0) return "";
   if (names.length === 1) return `${names[0]} печатает...`;
   if (names.length === 2) return `${names[0]} и ${names[1]} печатают...`;
-  return `${names.slice(0, -1).join(', ')} и ${names[names.length - 1]} печатают...`;
+  return `${names.slice(0, -1).join(", ")} и ${names[names.length - 1]} печатают...`;
 };
 
 /**
  * Группирует сообщения по датам для отображения разделителей дат
  */
 export const groupMessagesByDate = (
-  messages: Message[]
+  messages: Message[],
 ): { date: string; messages: Message[] }[] => {
   const groups: { date: string; messages: Message[] }[] = [];
-  let currentDate = '';
+  let currentDate = "";
 
   messages.forEach((msg) => {
-    const msgDate = new Date(msg.timestamp).toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    const msgDate = new Date(msg.timestamp).toLocaleDateString("ru-RU", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
     if (msgDate !== currentDate) {
@@ -113,11 +113,11 @@ export const groupMessagesByDate = (
  */
 export const searchMessages = (
   messages: Message[],
-  query: string
+  query: string,
 ): Message[] => {
   const lowerQuery = query.toLowerCase();
   return messages.filter((msg) =>
-    msg.content.toLowerCase().includes(lowerQuery)
+    msg.content.toLowerCase().includes(lowerQuery),
   );
 };
 
@@ -140,9 +140,9 @@ export const countUnreadMessages = (messages: Message[]): number => {
  */
 export const getInitials = (name: string): string => {
   return name
-    .split(' ')
+    .split(" ")
     .map((word) => word[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 };
@@ -152,7 +152,7 @@ export const getInitials = (name: string): string => {
  */
 export const shouldShowAvatar = (
   messages: Message[],
-  index: number
+  index: number,
 ): boolean => {
   if (index === 0) return true;
 
@@ -175,7 +175,7 @@ export const shouldShowAvatar = (
 export const shouldShowSenderName = (
   messages: Message[],
   index: number,
-  isGroupChat: boolean
+  isGroupChat: boolean,
 ): boolean => {
   if (!isGroupChat || index === 0) return isGroupChat;
 
@@ -189,20 +189,25 @@ export const shouldShowSenderName = (
 /**
  * Генерирует уникальный ID для новой сущности
  */
-export const generateId = (prefix: string = 'id'): string => {
+export const generateId = (prefix: string = "id"): string => {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
 /**
  * Валидирует содержимое сообщения
  */
-export const validateMessage = (content: string): { valid: boolean; error?: string } => {
+export const validateMessage = (
+  content: string,
+): { valid: boolean; error?: string } => {
   if (!content || !content.trim()) {
-    return { valid: false, error: 'Сообщение не может быть пустым' };
+    return { valid: false, error: "Сообщение не может быть пустым" };
   }
 
   if (content.length > 4000) {
-    return { valid: false, error: 'Сообщение слишком длинное (максимум 4000 символов)' };
+    return {
+      valid: false,
+      error: "Сообщение слишком длинное (максимум 4000 символов)",
+    };
   }
 
   return { valid: true };
@@ -211,7 +216,10 @@ export const validateMessage = (content: string): { valid: boolean; error?: stri
 /**
  * Получает сокращённый текст сообщения для превью
  */
-export const getMessagePreview = (content: string, maxLength: number = 50): string => {
+export const getMessagePreview = (
+  content: string,
+  maxLength: number = 50,
+): string => {
   if (content.length <= maxLength) return content;
   return `${content.substring(0, maxLength)}...`;
 };

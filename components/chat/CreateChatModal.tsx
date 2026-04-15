@@ -64,11 +64,11 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   const handleCreateVenueChat = () => {
     if (!selectedVenue) return;
 
-    const venue = venues.find((i) => i.id === selectedVenue);
+    const venue = venues.find((i) => i.id.toString() === selectedVenue);
     if (venue) {
       dispatch(
         createVenueChat({
-          venueId: venue.id,
+          venueId: venue.id.toString(),
           venueName: venue.name,
           type: venue.type,
         }),
@@ -210,9 +210,9 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
               {venues.map((Venue) => (
                 <button
                   key={Venue.id}
-                  onClick={() => setSelectedVenue(Venue.id)}
+                  onClick={() => setSelectedVenue(Venue.id.toString())}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    selectedVenue === Venue.id
+                    selectedVenue === Venue.id.toString()
                       ? "bg-blue-50 border border-blue-200"
                       : "hover:bg-gray-50 border border-transparent"
                   }`}

@@ -31,7 +31,7 @@ export const ChatMessagesArea: React.FC = () => {
     if (currentChat.type === ChatType.GROUP) {
       return <Users className="h-5 w-5" />;
     }
-    if (currentChat.type === ChatType.INSTITUTION) {
+    if (currentChat.type === ChatType.VENUE) {
       return <Building2 className="h-5 w-5" />;
     }
     return null;
@@ -64,12 +64,11 @@ export const ChatMessagesArea: React.FC = () => {
                     {currentChat.membersCount} {"участников"}
                   </p>
                 )}
-              {currentChat.type === ChatType.INSTITUTION &&
-                currentChat.institution && (
-                  <p className="text-xs text-muted-foreground">
-                    {currentChat.institution.category}
-                  </p>
-                )}
+              {currentChat.type === ChatType.VENUE && currentChat.Venue && (
+                <p className="text-xs text-muted-foreground">
+                  {currentChat.Venue.name}
+                </p>
+              )}
               {currentChat.type === ChatType.DIRECT &&
                 currentChat.participantUser?.status === "online" && (
                   <p className="text-xs text-green-600">{"онлайн"}</p>
@@ -119,7 +118,7 @@ export const ChatMessagesArea: React.FC = () => {
                               new Date().getFullYear()
                                 ? "numeric"
                                 : undefined,
-                          }
+                          },
                         )}
                       </span>
                       <Separator className="flex-1" />

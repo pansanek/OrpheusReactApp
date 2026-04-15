@@ -1,24 +1,36 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import Link from 'next/link';
-import { getMusicianById, getPostsByGroupId, GENRES, INSTRUMENTS, type OpenPosition } from '@/lib/mock-data';
-import { useAuth } from '@/lib/auth-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import {
+  getMusicianById,
+  getPostsByGroupId,
+  GENRES,
+  INSTRUMENTS,
+  type OpenPosition,
+} from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth-context";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -26,65 +38,83 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Users, Newspaper, Calendar, Crown, UserPlus, Settings,
-  MapPin, Clock, Link2, X, Plus, Save, Trash2,
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+  Users,
+  Newspaper,
+  Calendar,
+  Crown,
+  UserPlus,
+  Settings,
+  MapPin,
+  Clock,
+  Link2,
+  X,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { useParams } from "next/navigation";
 
-export default function GroupPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function GroupPage() {
+  const params = useParams();
+  const groupId = Number(params?.id);
   const { currentUser, groupsState, updateGroup } = useAuth();
-  const groupId = parseInt(id);
-  const group = groupsState.find(g => g.id === groupId);
+  const group = groupsState.find((g) => g.id === groupId);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   // Edit form state
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editGenre, setEditGenre] = useState('');
-  const [editCity, setEditCity] = useState('');
-  const [editSchedule, setEditSchedule] = useState('');
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editGenre, setEditGenre] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editSchedule, setEditSchedule] = useState("");
   const [editPositions, setEditPositions] = useState<OpenPosition[]>([]);
-  const [editVk, setEditVk] = useState('');
-  const [editYoutube, setEditYoutube] = useState('');
-  const [editSoundcloud, setEditSoundcloud] = useState('');
-  const [newPositionInstr, setNewPositionInstr] = useState('');
-  const [newPositionDesc, setNewPositionDesc] = useState('');
+  const [editVk, setEditVk] = useState("");
+  const [editYoutube, setEditYoutube] = useState("");
+  const [editSoundcloud, setEditSoundcloud] = useState("");
+  const [newPositionInstr, setNewPositionInstr] = useState("");
+  const [newPositionDesc, setNewPositionDesc] = useState("");
 
   const openEdit = useCallback(() => {
     if (!group) return;
     setEditName(group.name);
     setEditDescription(group.description);
     setEditGenre(group.genre);
-    setEditCity(group.city ?? '');
-    setEditSchedule(group.rehearsalSchedule ?? '');
+    setEditCity(group.city ?? "");
+    setEditSchedule(group.rehearsalSchedule ?? "");
     setEditPositions(group.openPositions ? [...group.openPositions] : []);
-    setEditVk(group.socialLinks?.vk ?? '');
-    setEditYoutube(group.socialLinks?.youtube ?? '');
-    setEditSoundcloud(group.socialLinks?.soundcloud ?? '');
-    setNewPositionInstr('');
-    setNewPositionDesc('');
+    setEditVk(group.socialLinks?.vk ?? "");
+    setEditYoutube(group.socialLinks?.youtube ?? "");
+    setEditSoundcloud(group.socialLinks?.soundcloud ?? "");
+    setNewPositionInstr("");
+    setNewPositionDesc("");
     setIsEditOpen(true);
   }, [group]);
 
   const addPosition = () => {
     if (!newPositionInstr) return;
-    setEditPositions(prev => [...prev, { instrument: newPositionInstr, description: newPositionDesc.trim() || undefined }]);
-    setNewPositionInstr('');
-    setNewPositionDesc('');
+    setEditPositions((prev) => [
+      ...prev,
+      {
+        instrument: newPositionInstr,
+        description: newPositionDesc.trim() || undefined,
+      },
+    ]);
+    setNewPositionInstr("");
+    setNewPositionDesc("");
   };
 
   const removePosition = (index: number) => {
-    setEditPositions(prev => prev.filter((_, i) => i !== index));
+    setEditPositions((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = useCallback(() => {
     if (!editName.trim()) {
-      toast({ title: 'Название обязательно', variant: 'destructive' });
+      toast({ title: "Название обязательно", variant: "destructive" });
       return;
     }
     updateGroup(groupId, {
@@ -101,37 +131,62 @@ export default function GroupPage({ params }: { params: { id: string } }) {
       },
     });
     setIsEditOpen(false);
-    toast({ title: 'Данные группы обновлены' });
-  }, [editName, editDescription, editGenre, editCity, editSchedule, editPositions, editVk, editYoutube, editSoundcloud, groupId, updateGroup]);
+    toast({ title: "Данные группы обновлены" });
+  }, [
+    editName,
+    editDescription,
+    editGenre,
+    editCity,
+    editSchedule,
+    editPositions,
+    editVk,
+    editYoutube,
+    editSoundcloud,
+    groupId,
+    updateGroup,
+  ]);
 
   if (!group) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Группа не найдена</h1>
-        <p className="text-muted-foreground mb-6">Группа с ID {id} не существует</p>
-        <Link href="/groups"><Button>Вернуться к группам</Button></Link>
+        <h1 className="text-2xl font-bold text-foreground mb-4">
+          Группа не найдена
+        </h1>
+        <p className="text-muted-foreground mb-6">
+          Группа с ID {id} не существует
+        </p>
+        <Link href="/groups">
+          <Button>Вернуться к группам</Button>
+        </Link>
       </div>
     );
   }
 
-  const members = group.members.map(mid => getMusicianById(mid)).filter(Boolean);
+  const members = group.members
+    .map((mid) => getMusicianById(mid))
+    .filter(Boolean);
   const creator = getMusicianById(group.creatorId);
   const groupPosts = getPostsByGroupId(group.id);
   const isMember = currentUser && group.members.includes(currentUser.id);
   const isCreator = currentUser?.id === group.creatorId;
 
-  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (name: string) =>
+    name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
 
   const getGenreColor = (genre: string) => {
     const colors: Record<string, string> = {
-      'Рок': 'bg-[var(--genre-rock)] text-white',
-      'Джаз': 'bg-[var(--genre-jazz)] text-white',
-      'Классика': 'bg-[var(--genre-classical)] text-black',
-      'Электроника': 'bg-[var(--genre-electronic)] text-white',
-      'Поп': 'bg-[var(--genre-pop)] text-white',
-      'Хип-хоп': 'bg-[var(--genre-hiphop)] text-white',
+      Рок: "bg-[var(--genre-rock)] text-white",
+      Джаз: "bg-[var(--genre-jazz)] text-white",
+      Классика: "bg-[var(--genre-classical)] text-black",
+      Электроника: "bg-[var(--genre-electronic)] text-white",
+      Поп: "bg-[var(--genre-pop)] text-white",
+      "Хип-хоп": "bg-[var(--genre-hiphop)] text-white",
     };
-    return colors[genre] || 'bg-muted text-muted-foreground';
+    return colors[genre] || "bg-muted text-muted-foreground";
   };
 
   return (
@@ -141,6 +196,7 @@ export default function GroupPage({ params }: { params: { id: string } }) {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <Avatar className="h-24 w-24">
+              <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
               <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
                 {group.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -149,11 +205,20 @@ export default function GroupPage({ params }: { params: { id: string } }) {
             <div className="flex-1">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">{group.name}</h1>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {group.name}
+                  </h1>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <Badge className={getGenreColor(group.genre)}>{group.genre}</Badge>
+                    <Badge className={getGenreColor(group.genre)}>
+                      {group.genre}
+                    </Badge>
                     {isMember && (
-                      <Badge variant="outline" className="text-primary border-primary">Вы участник</Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-primary border-primary"
+                      >
+                        Вы участник
+                      </Badge>
                     )}
                   </div>
                 </div>
@@ -170,7 +235,9 @@ export default function GroupPage({ params }: { params: { id: string } }) {
                 ) : null}
               </div>
 
-              <p className="text-foreground text-sm leading-relaxed mb-4">{group.description}</p>
+              <p className="text-foreground text-sm leading-relaxed mb-4">
+                {group.description}
+              </p>
 
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
                 {group.city && (
@@ -185,7 +252,8 @@ export default function GroupPage({ params }: { params: { id: string } }) {
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  Создана {new Date(group.createdAt).toLocaleDateString('ru-RU')}
+                  Создана{" "}
+                  {new Date(group.createdAt).toLocaleDateString("ru-RU")}
                 </span>
                 {group.rehearsalSchedule && (
                   <span className="flex items-center gap-1">
@@ -196,19 +264,29 @@ export default function GroupPage({ params }: { params: { id: string } }) {
               </div>
 
               {/* Social links */}
-              {group.socialLinks && Object.values(group.socialLinks).some(Boolean) && (
-                <div className="flex flex-wrap gap-2">
-                  {group.socialLinks.vk && (
-                    <Badge variant="outline" className="gap-1"><Link2 className="h-3 w-3" />VK: {group.socialLinks.vk}</Badge>
-                  )}
-                  {group.socialLinks.youtube && (
-                    <Badge variant="outline" className="gap-1"><Link2 className="h-3 w-3" />YT: {group.socialLinks.youtube}</Badge>
-                  )}
-                  {group.socialLinks.soundcloud && (
-                    <Badge variant="outline" className="gap-1"><Link2 className="h-3 w-3" />SC: {group.socialLinks.soundcloud}</Badge>
-                  )}
-                </div>
-              )}
+              {group.socialLinks &&
+                Object.values(group.socialLinks).some(Boolean) && (
+                  <div className="flex flex-wrap gap-2">
+                    {group.socialLinks.vk && (
+                      <Badge variant="outline" className="gap-1">
+                        <Link2 className="h-3 w-3" />
+                        VK: {group.socialLinks.vk}
+                      </Badge>
+                    )}
+                    {group.socialLinks.youtube && (
+                      <Badge variant="outline" className="gap-1">
+                        <Link2 className="h-3 w-3" />
+                        YT: {group.socialLinks.youtube}
+                      </Badge>
+                    )}
+                    {group.socialLinks.soundcloud && (
+                      <Badge variant="outline" className="gap-1">
+                        <Link2 className="h-3 w-3" />
+                        SC: {group.socialLinks.soundcloud}
+                      </Badge>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
         </CardContent>
@@ -227,13 +305,22 @@ export default function GroupPage({ params }: { params: { id: string } }) {
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-2">
               {group.openPositions.map((pos, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 bg-muted rounded-lg">
+                <div
+                  key={i}
+                  className="flex items-start gap-3 p-3 bg-muted rounded-lg"
+                >
                   <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                     <Music2Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground text-sm">{pos.instrument}</p>
-                    {pos.description && <p className="text-xs text-muted-foreground mt-0.5">{pos.description}</p>}
+                    <p className="font-medium text-foreground text-sm">
+                      {pos.instrument}
+                    </p>
+                    {pos.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {pos.description}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -257,45 +344,59 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 
         <TabsContent value="members">
           <div className="grid gap-4 sm:grid-cols-2">
-            {members.map(member => member && (
-              <Card key={member.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="py-4">
-                  <div className="flex items-center gap-4">
-                    <Link href={`/profile/${member.id}`}>
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Link>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/profile/${member.id}`}
-                          className="font-medium text-foreground hover:text-primary transition-colors truncate"
-                        >
-                          {member.name}
+            {members.map(
+              (member) =>
+                member && (
+                  <Card
+                    key={member.id}
+                    className="hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="py-4">
+                      <div className="flex items-center gap-4">
+                        <Link href={`/profile/${member.id}`}>
+                          <Avatar className="h-12 w-12">
+                            <AvatarFallback className="bg-primary text-primary-foreground">
+                              {getInitials(member.name)}
+                            </AvatarFallback>
+                          </Avatar>
                         </Link>
-                        {member.id === group.creatorId && (
-                          <Crown className="h-4 w-4 text-warning shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/profile/${member.id}`}
+                              className="font-medium text-foreground hover:text-primary transition-colors truncate"
+                            >
+                              {member.name}
+                            </Link>
+                            {member.id === group.creatorId && (
+                              <Crown className="h-4 w-4 text-warning shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {member.instruments.join(", ")}
+                          </p>
+                        </div>
+                        {currentUser && member.id !== currentUser.id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-transparent shrink-0"
+                          >
+                            Написать
+                          </Button>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{member.instruments.join(', ')}</p>
-                    </div>
-                    {currentUser && member.id !== currentUser.id && (
-                      <Button variant="outline" size="sm" className="bg-transparent shrink-0">Написать</Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </CardContent>
+                  </Card>
+                ),
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="posts">
           {groupPosts.length > 0 ? (
             <div className="space-y-4">
-              {groupPosts.map(post => {
+              {groupPosts.map((post) => {
                 const author = getMusicianById(post.authorId);
                 if (!author) return null;
                 return (
@@ -310,11 +411,16 @@ export default function GroupPage({ params }: { params: { id: string } }) {
                           </Avatar>
                         </Link>
                         <div>
-                          <Link href={`/profile/${author.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                          <Link
+                            href={`/profile/${author.id}`}
+                            className="font-medium text-foreground hover:text-primary transition-colors"
+                          >
                             {author.name}
                           </Link>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(post.timestamp).toLocaleDateString('ru-RU')}
+                            {new Date(post.timestamp).toLocaleDateString(
+                              "ru-RU",
+                            )}
                           </p>
                         </div>
                       </div>
@@ -330,8 +436,12 @@ export default function GroupPage({ params }: { params: { id: string } }) {
             <Card>
               <CardContent className="py-12 text-center">
                 <Newspaper className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">Пока нет постов</h3>
-                <p className="text-muted-foreground text-sm">В этой группе ещё никто не публиковал посты</p>
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Пока нет постов
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  В этой группе ещё никто не публиковал посты
+                </p>
               </CardContent>
             </Card>
           )}
@@ -343,7 +453,9 @@ export default function GroupPage({ params }: { params: { id: string } }) {
         <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Настройки группы</DialogTitle>
-            <DialogDescription>Редактируйте информацию о вашей группе</DialogDescription>
+            <DialogDescription>
+              Редактируйте информацию о вашей группе
+            </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-5 py-2">
@@ -351,14 +463,24 @@ export default function GroupPage({ params }: { params: { id: string } }) {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="g-name">Название *</Label>
-                <Input id="g-name" value={editName} onChange={e => setEditName(e.target.value)} />
+                <Input
+                  id="g-name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label>Жанр</Label>
                 <Select value={editGenre} onValueChange={setEditGenre}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                    {GENRES.map((g) => (
+                      <SelectItem key={g} value={g}>
+                        {g}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -369,7 +491,7 @@ export default function GroupPage({ params }: { params: { id: string } }) {
               <Textarea
                 id="g-desc"
                 value={editDescription}
-                onChange={e => setEditDescription(e.target.value)}
+                onChange={(e) => setEditDescription(e.target.value)}
                 rows={3}
                 placeholder="Расскажите о группе, её стиле и целях..."
               />
@@ -378,11 +500,21 @@ export default function GroupPage({ params }: { params: { id: string } }) {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="g-city">Город</Label>
-                <Input id="g-city" value={editCity} onChange={e => setEditCity(e.target.value)} placeholder="Москва" />
+                <Input
+                  id="g-city"
+                  value={editCity}
+                  onChange={(e) => setEditCity(e.target.value)}
+                  placeholder="Москва"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="g-schedule">Расписание репетиций</Label>
-                <Input id="g-schedule" value={editSchedule} onChange={e => setEditSchedule(e.target.value)} placeholder="Пн, Ср в 19:00" />
+                <Input
+                  id="g-schedule"
+                  value={editSchedule}
+                  onChange={(e) => setEditSchedule(e.target.value)}
+                  placeholder="Пн, Ср в 19:00"
+                />
               </div>
             </div>
 
@@ -395,12 +527,23 @@ export default function GroupPage({ params }: { params: { id: string } }) {
               {editPositions.length > 0 && (
                 <div className="grid gap-2">
                   {editPositions.map((pos, i) => (
-                    <div key={i} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                      <span className="font-medium text-sm text-foreground flex-1">{pos.instrument}</span>
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 p-2 bg-muted rounded-lg"
+                    >
+                      <span className="font-medium text-sm text-foreground flex-1">
+                        {pos.instrument}
+                      </span>
                       {pos.description && (
-                        <span className="text-xs text-muted-foreground flex-1 truncate">{pos.description}</span>
+                        <span className="text-xs text-muted-foreground flex-1 truncate">
+                          {pos.description}
+                        </span>
                       )}
-                      <button type="button" onClick={() => removePosition(i)} className="text-muted-foreground hover:text-destructive transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => removePosition(i)}
+                        className="text-muted-foreground hover:text-destructive transition-colors"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -409,19 +552,28 @@ export default function GroupPage({ params }: { params: { id: string } }) {
               )}
 
               <div className="grid gap-2 p-3 border border-dashed rounded-lg">
-                <p className="text-xs text-muted-foreground">Добавить позицию</p>
+                <p className="text-xs text-muted-foreground">
+                  Добавить позицию
+                </p>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <Select value={newPositionInstr} onValueChange={setNewPositionInstr}>
+                  <Select
+                    value={newPositionInstr}
+                    onValueChange={setNewPositionInstr}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Инструмент..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {INSTRUMENTS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                      {INSTRUMENTS.map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <Input
                     value={newPositionDesc}
-                    onChange={e => setNewPositionDesc(e.target.value)}
+                    onChange={(e) => setNewPositionDesc(e.target.value)}
                     placeholder="Описание (необязательно)"
                   />
                 </div>
@@ -443,26 +595,61 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 
             {/* Social links */}
             <div className="grid gap-2">
-              <Label className="flex items-center gap-2"><Link2 className="h-4 w-4" />Социальные сети</Label>
+              <Label className="flex items-center gap-2">
+                <Link2 className="h-4 w-4" />
+                Социальные сети
+              </Label>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="grid gap-1.5">
-                  <Label htmlFor="g-vk" className="text-xs text-muted-foreground">VK</Label>
-                  <Input id="g-vk" value={editVk} onChange={e => setEditVk(e.target.value)} placeholder="group_vk" />
+                  <Label
+                    htmlFor="g-vk"
+                    className="text-xs text-muted-foreground"
+                  >
+                    VK
+                  </Label>
+                  <Input
+                    id="g-vk"
+                    value={editVk}
+                    onChange={(e) => setEditVk(e.target.value)}
+                    placeholder="group_vk"
+                  />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="g-yt" className="text-xs text-muted-foreground">YouTube</Label>
-                  <Input id="g-yt" value={editYoutube} onChange={e => setEditYoutube(e.target.value)} placeholder="mychannel" />
+                  <Label
+                    htmlFor="g-yt"
+                    className="text-xs text-muted-foreground"
+                  >
+                    YouTube
+                  </Label>
+                  <Input
+                    id="g-yt"
+                    value={editYoutube}
+                    onChange={(e) => setEditYoutube(e.target.value)}
+                    placeholder="mychannel"
+                  />
                 </div>
                 <div className="grid gap-1.5">
-                  <Label htmlFor="g-sc" className="text-xs text-muted-foreground">SoundCloud</Label>
-                  <Input id="g-sc" value={editSoundcloud} onChange={e => setEditSoundcloud(e.target.value)} placeholder="soundcloud" />
+                  <Label
+                    htmlFor="g-sc"
+                    className="text-xs text-muted-foreground"
+                  >
+                    SoundCloud
+                  </Label>
+                  <Input
+                    id="g-sc"
+                    value={editSoundcloud}
+                    onChange={(e) => setEditSoundcloud(e.target.value)}
+                    placeholder="soundcloud"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Отмена</Button>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+              Отмена
+            </Button>
             <Button onClick={handleSave}>
               <Save className="h-4 w-4 mr-1.5" />
               Сохранить
@@ -477,7 +664,15 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 // Small inline icon component to avoid import issues
 function Music2Icon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="8" cy="18" r="4" />
       <path d="M12 18V2l7 4" />
     </svg>
