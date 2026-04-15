@@ -1,26 +1,19 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Search,
-  Bell,
-  Menu,
-  Music,
-  LogOut,
-  User,
-  Settings,
-} from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { NotificationsPanel } from '@/components/notifications-panel';
+import { Search, Menu, Music, LogOut, User, Settings } from 'lucide-react';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -31,9 +24,9 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const getInitials = (name: string) => {
     return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
+      .split(' ')
+      .map(n => n[0])
+      .join('')
       .toUpperCase();
   };
 
@@ -50,13 +43,13 @@ export function Header({ onMenuClick }: HeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-
+          
           <Link href="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <Music className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="hidden sm:block text-xl font-semibold text-foreground">
-              ORPHEUS
+              УМПСМ
             </span>
           </Link>
         </div>
@@ -68,7 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Поиск музыкантов, групп..."
+                placeholder="Поиск участников, групп, учреждений..."
                 className="pl-10 bg-muted border-0"
               />
             </div>
@@ -79,17 +72,11 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center gap-2">
           {currentUser ? (
             <>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-warning rounded-full" />
-              </Button>
+              <NotificationsPanel />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full"
-                  >
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials(currentUser.name)}
@@ -101,9 +88,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
                     <p className="text-sm font-medium">{currentUser.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {currentUser.email}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{currentUser.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -119,10 +104,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={logout}
-                    className="cursor-pointer text-destructive"
-                  >
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Выйти
                   </DropdownMenuItem>
