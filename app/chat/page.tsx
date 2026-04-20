@@ -11,12 +11,14 @@ export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full h-screen flex items-center justify-center">
+        <div className="flex h-[100dvh] items-center justify-center bg-background">
           Loading chats...
         </div>
       }
     >
-      <ChatPageContent />
+      <main className="h-[100dvh] w-full overflow-hidden bg-background">
+        <ChatPageContent />
+      </main>
     </Suspense>
   );
 }

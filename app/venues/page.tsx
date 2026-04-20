@@ -34,6 +34,8 @@ import {
   List,
 } from "lucide-react";
 import { VenuesMap } from "@/components/venues/VenuesMap";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { normalizeImagePath } from "@/lib/utils";
 const venueTypes = ["Все", "студия", "репетиционная база", "концертный зал"];
 type ViewMode = "list" | "map";
 
@@ -161,7 +163,17 @@ export default function VenuesPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                        <TypeIcon className="h-6 w-6 text-muted-foreground" />
+                        <div className="relative">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage
+                              src={
+                                normalizeImagePath(venue.avatar) ?? undefined
+                              }
+                              alt={venue.name}
+                            />
+                            <TypeIcon className="h-6 w-6 text-muted-foreground" />
+                          </Avatar>
+                        </div>
                       </div>
                       <div>
                         <CardTitle className="text-lg">{venue.name}</CardTitle>

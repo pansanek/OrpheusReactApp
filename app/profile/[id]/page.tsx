@@ -66,6 +66,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { useParams } from "next/navigation";
+import { normalizeImagePath } from "@/lib/utils";
 
 const ROLE_ICONS: Record<
   string,
@@ -235,7 +236,7 @@ export default function PublicProfilePage() {
             <div className="relative shrink-0">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src={musician.avatar ?? undefined}
+                  src={normalizeImagePath(musician.avatar)}
                   alt={musician.name}
                 />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
@@ -615,8 +616,8 @@ export default function PublicProfilePage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={musician.avatar ?? undefined}
-                          alt={musician.name}
+                          src={normalizeImagePath(group.avatar) ?? undefined}
+                          alt={group.name}
                         />
                         <AvatarFallback className="bg-secondary text-secondary-foreground">
                           {group.name.substring(0, 2).toUpperCase()}
@@ -722,7 +723,7 @@ export default function PublicProfilePage() {
                       >
                         <Avatar className="h-9 w-9 shrink-0">
                           <AvatarImage
-                            src={g.avatar ?? undefined}
+                            src={normalizeImagePath(g.avatar) ?? undefined}
                             alt={g.name}
                           />
                           <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">
@@ -747,7 +748,7 @@ export default function PublicProfilePage() {
                   <div className="flex items-center gap-3 p-3 rounded-lg border border-primary bg-primary/5">
                     <Avatar className="h-9 w-9 shrink-0">
                       <AvatarImage
-                        src={musician.avatar ?? undefined}
+                        src={normalizeImagePath(musician.avatar) ?? undefined}
                         alt={musician.name}
                       />
                       <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">

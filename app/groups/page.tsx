@@ -1,15 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { groups, getMusicianById, getGroupsByMusicianId, GENRES } from '@/lib/mock-data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import {
+  groups,
+  getMusicianById,
+  getGroupsByMusicianId,
+  GENRES,
+} from "@/lib/mock-data";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -17,45 +28,48 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Users, Plus, Search, Music } from 'lucide-react';
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Users, Plus, Search, Music } from "lucide-react";
 
 export default function GroupsPage() {
   const { currentUser } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-
+  const { allUsers } = useAuth();
   const myGroups = currentUser ? getGroupsByMusicianId(currentUser.id) : [];
-  const allGroups = groups.filter(g => 
-    !searchQuery || 
-    g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    g.genre.toLowerCase().includes(searchQuery.toLowerCase())
+  const allGroups = groups.filter(
+    (g) =>
+      !searchQuery ||
+      g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      g.genre.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const getInitials = (name: string) => name.substring(0, 2).toUpperCase();
 
   const getGenreColor = (genre: string) => {
     const colors: Record<string, string> = {
-      'Рок': 'bg-[var(--genre-rock)] text-white',
-      'Джаз': 'bg-[var(--genre-jazz)] text-white',
-      'Классика': 'bg-[var(--genre-classical)] text-black',
-      'Электроника': 'bg-[var(--genre-electronic)] text-white',
-      'Поп': 'bg-[var(--genre-pop)] text-white',
-      'Хип-хоп': 'bg-[var(--genre-hiphop)] text-white',
+      Рок: "bg-[var(--genre-rock)] text-white",
+      Джаз: "bg-[var(--genre-jazz)] text-white",
+      Классика: "bg-[var(--genre-classical)] text-black",
+      Электроника: "bg-[var(--genre-electronic)] text-white",
+      Поп: "bg-[var(--genre-pop)] text-white",
+      "Хип-хоп": "bg-[var(--genre-hiphop)] text-white",
     };
-    return colors[genre] || 'bg-muted text-muted-foreground';
+    return colors[genre] || "bg-muted text-muted-foreground";
   };
 
-  const GroupCard = ({ group }: { group: typeof groups[0] }) => {
-    const members = group.members.map(id => getMusicianById(id)).filter(Boolean);
+  const GroupCard = ({ group }: { group: (typeof groups)[0] }) => {
+    const members = group.members
+      .map((id) => getMusicianById(id))
+      .filter(Boolean);
     const isMember = currentUser && group.members.includes(currentUser.id);
 
     return (
@@ -63,6 +77,7 @@ export default function GroupsPage() {
         <CardHeader className="pb-3">
           <div className="flex items-start gap-4">
             <Avatar className="h-14 w-14">
+              <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
               <AvatarFallback className="bg-secondary text-secondary-foreground text-lg">
                 {getInitials(group.name)}
               </AvatarFallback>
@@ -78,7 +93,10 @@ export default function GroupsPage() {
                   {group.genre}
                 </Badge>
                 {isMember && (
-                  <Badge variant="outline" className="text-primary border-primary">
+                  <Badge
+                    variant="outline"
+                    className="text-primary border-primary"
+                  >
                     Участник
                   </Badge>
                 )}
@@ -90,27 +108,41 @@ export default function GroupsPage() {
           <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
             {group.description}
           </p>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex -space-x-2">
-                {members.slice(0, 4).map(member => member && (
-                  <Avatar key={member.id} className="h-8 w-8 border-2 border-card">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
+                {members.slice(0, 4).map(
+                  (member) =>
+                    member && (
+                      <Avatar
+                        key={member.id}
+                        className="h-8 w-8 border-2 border-card"
+                      >
+                        <AvatarImage
+                          src={
+                            allUsers.find((u) => u.id === member.id)?.avatar ??
+                            undefined
+                          }
+                          alt={member.name}
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          {member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                    ),
+                )}
               </div>
               <span className="text-sm text-muted-foreground">
                 {group.members.length} участников
               </span>
             </div>
-            
+
             <Button asChild variant="outline" size="sm">
-              <Link href={`/groups/${group.id}`}>
-                Открыть
-              </Link>
+              <Link href={`/groups/${group.id}`}>Открыть</Link>
             </Button>
           </div>
         </CardContent>
@@ -127,7 +159,7 @@ export default function GroupsPage() {
             Создавайте коллективы и работайте над проектами вместе
           </p>
         </div>
-        
+
         {currentUser && (
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
@@ -155,20 +187,25 @@ export default function GroupsPage() {
                       <SelectValue placeholder="Выберите жанр" />
                     </SelectTrigger>
                     <SelectContent>
-                      {GENRES.map(genre => (
-                        <SelectItem key={genre} value={genre}>{genre}</SelectItem>
+                      {GENRES.map((genre) => (
+                        <SelectItem key={genre} value={genre}>
+                          {genre}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="text-sm font-medium">Описание</label>
-                  <Textarea 
+                  <Textarea
                     placeholder="Расскажите о своей группе..."
                     className="mt-1.5"
                   />
                 </div>
-                <Button className="w-full" onClick={() => setIsCreateOpen(false)}>
+                <Button
+                  className="w-full"
+                  onClick={() => setIsCreateOpen(false)}
+                >
                   Создать группу
                 </Button>
               </div>
@@ -195,15 +232,13 @@ export default function GroupsPage() {
             <TabsTrigger value="all">
               Все группы ({allGroups.length})
             </TabsTrigger>
-            <TabsTrigger value="my">
-              Мои группы ({myGroups.length})
-            </TabsTrigger>
+            <TabsTrigger value="my">Мои группы ({myGroups.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
             {allGroups.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {allGroups.map(group => (
+                {allGroups.map((group) => (
                   <GroupCard key={group.id} group={group} />
                 ))}
               </div>
@@ -220,7 +255,7 @@ export default function GroupsPage() {
           <TabsContent value="my">
             {myGroups.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {myGroups.map(group => (
+                {myGroups.map((group) => (
                   <GroupCard key={group.id} group={group} />
                 ))}
               </div>
@@ -245,7 +280,7 @@ export default function GroupsPage() {
         </Tabs>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {allGroups.map(group => (
+          {allGroups.map((group) => (
             <GroupCard key={group.id} group={group} />
           ))}
         </div>

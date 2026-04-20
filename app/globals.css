@@ -1,27 +1,24 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* UMPSM - Social Network for Musicians */
 :root {
   /* Light Background Palette */
   --background: #f8f9fa;
-  --foreground: #111111;
+  --foreground: #212529;
   --card: #ffffff;
   --card-foreground: #212529;
   --popover: #ffffff;
   --popover-foreground: #212529;
 
   /* Primary - Deep Blue */
-  --primary: #161616;
+  --primary: #4361ee;
   --primary-foreground: #ffffff;
 
   /* Secondary - Purple-blue */
-  --secondary: #1e1d1f;
+  --secondary: #3a0ca3;
   --secondary-foreground: #ffffff;
 
   /* Muted for subtle elements */
@@ -29,34 +26,34 @@
   --muted-foreground: #6c757d;
 
   /* Accent - Cyan */
-  --accent: #333333;
+  --accent: #4cc9f0;
   --accent-foreground: #212529;
 
   /* Destructive - Purple */
-  --destructive: #383838;
+  --destructive: #7209b7;
   --destructive-foreground: #ffffff;
 
   /* Success/Warning colors */
-  --success: #88f04c;
+  --success: #4cc9f0;
   --success-foreground: #212529;
-  --warning: #f72525;
+  --warning: #f72585;
   --warning-foreground: #ffffff;
 
   /* Borders and inputs */
   --border: #e9ecef;
   --input: #e9ecef;
-  --ring: #272727;
+  --ring: #4361ee;
   --radius: 0.75rem;
 
   /* Sidebar */
   --sidebar: #f8f9fa;
   --sidebar-foreground: #212529;
-  --sidebar-primary: #1b1b1b;
+  --sidebar-primary: #4361ee;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e9ecef;
   --sidebar-accent-foreground: #212529;
   --sidebar-border: #e9ecef;
-  --sidebar-ring: #1d1d1d;
+  --sidebar-ring: #4361ee;
 
   /* Charts */
   --chart-1: #4361ee;
@@ -74,9 +71,9 @@
   --genre-hiphop: #118ab2;
 
   /* Status colors */
-  --status-online: #0648d6;
+  --status-online: #06d6a0;
   --status-offline: #6c757d;
-  --status-busy: #ff0000;
+  --status-busy: #ff9e00;
   --status-recording: #ff6b6b;
 }
 

@@ -1,5 +1,5 @@
 "use client";
-
+import { normalizeImagePath } from "@/lib/utils";
 import { useState } from "react";
 import Link from "next/link";
 import type { Musician } from "@/lib/mock-data";
@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InviteToGroupDialog } from "@/components/invite-to-group-dialog";
 import { Star, MapPin, MessageCircle, UserPlus } from "lucide-react";
-
 interface MusicianCardProps {
   musician: Musician;
   showActions?: boolean;
@@ -26,6 +25,7 @@ export function MusicianCard({
   const [inviteOpen, setInviteOpen] = useState(false);
 
   const isOwnCard = currentUser?.id === musician.id;
+  const { allUsers } = useAuth();
 
   const getInitials = (name: string) =>
     name
@@ -67,7 +67,11 @@ export function MusicianCard({
             <div className="relative">
               <Avatar className="h-16 w-16">
                 <AvatarImage
-                  src={musician.avatar ?? undefined}
+                  src={
+                    normalizeImagePath(
+                      allUsers.find((u) => u.id === musician.id)?.avatar,
+                    ) ?? undefined
+                  }
                   alt={musician.name}
                 />
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">

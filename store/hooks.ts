@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useMemo } from "react";
 import type { RootState, AppDispatch } from "./store";
 import { Chat, ChatType } from "./types/chat.types";
+import { useAuth } from "@/lib/auth-context";
 
 // Типизированные версии useDispatch и useSelector
 export const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -15,9 +16,16 @@ export const useAppSelector = <TSelected>(
 export const useFilteredChats = () => {
   const chats = useAppSelector((state) => state.chats.chats);
   const filter = useAppSelector((state) => state.chats.filter);
-
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id;
   return useMemo(() => {
     return chats.filter((chat) => {
+      if (
+        !currentUserId ||
+        !chat.participants?.includes(currentUserId.toString())
+      ) {
+        return false;
+      }
       // Фильтр по типу
       if (filter.type !== "all" && chat.type !== filter.type) {
         return false;
@@ -31,7 +39,7 @@ export const useFilteredChats = () => {
 
       return true;
     });
-  }, [chats, filter]);
+  }, [chats, filter, currentUserId]);
 };
 
 // Хук для получения текущего чата

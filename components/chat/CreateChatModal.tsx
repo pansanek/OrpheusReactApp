@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
-import { musicians, venues } from "@/lib/mock-data";
+import { musicians, VENUE_ADMINS, venues } from "@/lib/mock-data";
 import {
   createDirectChat,
   createGroupChat,
   createVenueChat,
 } from "@/store/slices/chatSlice";
+import { useAuth } from "@/lib/auth-context";
 
 interface CreateChatModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
-
+  const { currentUser } = useAuth();
   const handleCreateDirectChat = () => {
     if (!selectedUser) return;
 
@@ -43,6 +44,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
           participantId: user.id.toString(),
           participantName: user.name,
           participantAvatar: user.avatar || getInitials(user.name),
+          currentUserId: currentUser?.id.toString() || "user",
         }),
       );
       handleClose();
@@ -56,21 +58,26 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
       createGroupChat({
         name: groupName,
         participantIds: selectedUsers,
+        currentUserId: currentUser?.id.toString() || "user",
       }),
     );
     handleClose();
   };
-
   const handleCreateVenueChat = () => {
     if (!selectedVenue) return;
 
     const venue = venues.find((i) => i.id.toString() === selectedVenue);
+    const venueId = venue?.id ?? 1;
+    const adminId = VENUE_ADMINS[venueId] ?? 1;
     if (venue) {
       dispatch(
         createVenueChat({
           venueId: venue.id.toString(),
           venueName: venue.name,
           type: venue.type,
+          venueAdmin: adminId.toString(),
+          venueLogo: venue?.avatar || getInitials(venue.name),
+          currentUserId: currentUser?.id.toString() || "user",
         }),
       );
       handleClose();
@@ -97,7 +104,10 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
+    >
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 max-h-96 flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex justify-between items-center">

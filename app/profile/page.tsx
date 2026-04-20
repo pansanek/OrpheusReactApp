@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -78,12 +78,20 @@ const ROLE_ICONS: Record<
 };
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
+import { normalizeImagePath } from "@/lib/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
   const { currentUser, updateProfile } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    currentUser?.avatar || null,
+  );
+
+  useEffect(() => {
+    setAvatarUrl(currentUser?.avatar || null);
+  }, [currentUser?.id, currentUser?.avatar]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = useCallback(
@@ -95,6 +103,10 @@ export default function ProfilePage() {
         const url = ev.target?.result as string;
         setAvatarUrl(url);
         updateProfile({ avatar: url });
+        toast({ title: "Аватар обновлён" });
+      };
+      reader.onerror = () => {
+        toast({ title: "Ошибка загрузки", variant: "destructive" });
       };
       reader.readAsDataURL(file);
     },
@@ -239,7 +251,11 @@ export default function ProfilePage() {
             <div className="relative shrink-0">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src={avatarUrl ?? currentUser.avatar ?? undefined}
+                  src={
+                    normalizeImagePath(avatarUrl) ??
+                    normalizeImagePath(currentUser.avatar) ??
+                    undefined
+                  }
                   alt={currentUser.name}
                 />
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
@@ -640,8 +656,8 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={musician.avatar ?? undefined}
-                          alt={musician.name}
+                          src={normalizeImagePath(group.avatar) ?? undefined}
+                          alt={group.name}
                         />
                         <AvatarFallback className="bg-secondary text-secondary-foreground">
                           {group.name.substring(0, 2).toUpperCase()}

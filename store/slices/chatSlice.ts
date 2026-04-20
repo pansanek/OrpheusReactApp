@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Chat, ChatState, ChatType, Message } from "../types/chat.types";
 import { musicians, venues } from "@/lib/mock-data";
+import { RootState } from "../store";
+import { useAuth } from "@/lib/auth-context";
 
 const getInitials = (name: string) => {
   return name
@@ -9,14 +11,13 @@ const getInitials = (name: string) => {
     .join("")
     .toUpperCase();
 };
-
 const mockChats: Chat[] = [
   {
     id: "chat-1",
     type: ChatType.DIRECT,
     name: musicians[1].name,
     avatar: musicians[1].avatar || getInitials(musicians[1].name),
-    participants: ["user-current", musicians[1].id.toString()],
+    participants: [musicians[0].id.toString(), musicians[1].id.toString()],
     createdAt: Date.now() - 86400000,
     updatedAt: Date.now() - 3600000,
     unreadCount: 2,
@@ -29,6 +30,8 @@ const mockChats: Chat[] = [
       timestamp: Date.now() - 3600000,
       type: "text",
       read: false,
+      status: "delivered",
+      senderAvatar: musicians[1].avatar,
     },
   },
 ];
@@ -38,12 +41,14 @@ const mockMessages: Record<string, Message[]> = {
     {
       id: "msg-1",
       chatId: "chat-1",
-      senderId: "user-current",
+      senderId: musicians[0].id.toString(),
       senderName: "Вы",
       content: "Привет! Как дела?",
       timestamp: Date.now() - 7200000,
       type: "text",
       read: true,
+      status: "read",
+      senderAvatar: null,
     },
     {
       id: "msg-2",
@@ -54,6 +59,8 @@ const mockMessages: Record<string, Message[]> = {
       timestamp: Date.now() - 6900000,
       type: "text",
       read: true,
+      status: "read",
+      senderAvatar: musicians[1].avatar,
     },
     {
       id: "msg-3",
@@ -64,6 +71,8 @@ const mockMessages: Record<string, Message[]> = {
       timestamp: Date.now() - 3600000,
       type: "text",
       read: false,
+      status: "delivered",
+      senderAvatar: musicians[1].avatar,
     },
   ],
 };
@@ -127,17 +136,22 @@ const chatSlice = createSlice({
         participantId: string;
         participantName: string;
         participantAvatar?: string;
+        currentUserId: string;
       }>,
     ) => {
-      const { participantId, participantName, participantAvatar } =
-        action.payload;
+      const {
+        participantId,
+        participantName,
+        participantAvatar,
+        currentUserId,
+      } = action.payload;
 
       // Проверить, существует ли уже такой чат
       const existingChat = state.chats.find(
         (c) =>
           c.type === ChatType.DIRECT &&
           c.participants.includes(participantId) &&
-          c.participants.includes("user-current"),
+          c.participants.includes(currentUserId),
       );
 
       if (existingChat) {
@@ -150,7 +164,7 @@ const chatSlice = createSlice({
         type: ChatType.DIRECT,
         name: participantName,
         avatar: participantAvatar,
-        participants: ["user-current", participantId],
+        participants: [currentUserId, participantId],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
@@ -173,19 +187,21 @@ const chatSlice = createSlice({
         name: string;
         description?: string;
         participantIds: string[];
+        currentUserId: string;
       }>,
     ) => {
-      const { name, description, participantIds } = action.payload;
+      const { name, description, participantIds, currentUserId } =
+        action.payload;
 
       const newChat: Chat = {
         id: `chat-${Date.now()}`,
         type: ChatType.GROUP,
         name,
         description,
-        participants: ["user-current", ...participantIds],
+        participants: [currentUserId, ...participantIds],
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        admin: "user-current",
+        admin: currentUserId,
         membersCount: participantIds.length + 1,
         unreadCount: 0,
       };
@@ -201,11 +217,14 @@ const chatSlice = createSlice({
       action: PayloadAction<{
         venueId: string;
         venueName: string;
-        venueLogo?: string;
+        venueLogo: string;
+        venueAdmin: string;
         type?: string;
+        currentUserId: string;
       }>,
     ) => {
-      const { venueId, venueName, venueLogo, type } = action.payload;
+      const { venueId, venueName, venueLogo, type, venueAdmin, currentUserId } =
+        action.payload;
 
       // Проверить, существует ли уже такой чат
       const existingChat = state.chats.find(
@@ -222,7 +241,7 @@ const chatSlice = createSlice({
         type: ChatType.VENUE,
         name: venueName,
         avatar: venueLogo,
-        participants: ["user-current"],
+        participants: [currentUserId, venueAdmin],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
@@ -291,3 +310,6 @@ export const {
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
+
+export const selectCurrentChatId = (state: RootState) =>
+  state.chats.currentChatId;

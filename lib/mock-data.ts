@@ -220,6 +220,7 @@ export interface Venue {
   rating: number;
   pricePerHour: number;
   description: string;
+  avatar: string | null;
   phone?: string;
   email?: string;
   workingHours?: string;
@@ -251,7 +252,7 @@ export const musicians: Musician[] = [
     genres: ["Рок", "Блюз"],
     skillLevel: 4,
     location: "Москва",
-    avatar: null,
+    avatar: "musician-1.png",
     bio: "Профессиональный гитарист с 10-летним опытом. Играю в стиле блюз-рок.",
     aiTags: [
       { id: 1, text: "Ищу рок-группу", category: "collaboration" },
@@ -270,7 +271,7 @@ export const musicians: Musician[] = [
     genres: ["Джаз", "Поп"],
     skillLevel: 5,
     location: "Санкт-Петербург",
-    avatar: null,
+    avatar: "musician-2.png",
     bio: "Джазовая вокалистка, выступаю в клубах города.",
     aiTags: [
       { id: 3, text: "Джем-сессии", category: "activity" },
@@ -289,7 +290,7 @@ export const musicians: Musician[] = [
     genres: ["Рок", "Метал"],
     skillLevel: 4,
     location: "Москва",
-    avatar: null,
+    avatar: "musician-3.png",
     bio: 'Барабанщик с опытом студийной работы. Администратор студии "Звук".',
     aiTags: [
       { id: 5, text: "Студийная работа", category: "skill" },
@@ -308,7 +309,7 @@ export const musicians: Musician[] = [
     genres: ["Классика", "Электроника"],
     skillLevel: 5,
     location: "Казань",
-    avatar: null,
+    avatar: "musician-4.png",
     bio: "Классическая скрипачка, экспериментирую с электронной музыкой.",
     aiTags: [
       { id: 7, text: "Эксперименты со звуком", category: "goal" },
@@ -327,7 +328,7 @@ export const musicians: Musician[] = [
     genres: ["Фанк", "Джаз", "R&B"],
     skillLevel: 4,
     location: "Москва",
-    avatar: null,
+    avatar: "musician-5.png",
     bio: "Басист-фанкер, люблю грув и ритм.",
     aiTags: [
       { id: 9, text: "Фанк-джемы", category: "activity" },
@@ -346,7 +347,7 @@ export const musicians: Musician[] = [
     genres: ["Джаз", "Классика"],
     skillLevel: 5,
     location: "Санкт-Петербург",
-    avatar: null,
+    avatar: "musician-6.png",
     bio: "Профессиональный саксофонист, преподаю музыку более 8 лет.",
     aiTags: [
       { id: 11, text: "Преподавание", category: "skill" },
@@ -375,7 +376,7 @@ export const musicians: Musician[] = [
     genres: ["Поп", "Хип-хоп", "R&B"],
     skillLevel: 5,
     location: "Москва",
-    avatar: null,
+    avatar: "musician-7.png",
     bio: "Независимый продюсер и промоутер. Работаю с молодыми артистами и организую концерты.",
     aiTags: [
       { id: 13, text: "Ищу новых артистов", category: "collaboration" },
@@ -401,7 +402,7 @@ export const musicians: Musician[] = [
     genres: ["Рок", "Метал", "Электроника"],
     skillLevel: 5,
     location: "Москва",
-    avatar: null,
+    avatar: "musician-8.png",
     bio: "Звукорежиссёр с 12-летним опытом. Специализируюсь на записи и сведении рок-музыки.",
     aiTags: [
       { id: 15, text: "Сведение и мастеринг", category: "skill" },
@@ -422,12 +423,12 @@ export const musicians: Musician[] = [
 export const groups: Group[] = [
   {
     id: 1,
-    name: "The Voltage",
+    name: "Echoes",
     description: "Московская рок-группа, играем каверы и авторский материал.",
     genre: "Рок",
-    members: [1, 3],
+    members: [1, 2],
     creatorId: 1,
-    avatar: null,
+    avatar: "band-1.png",
     createdAt: "2024-01-15",
     city: "Москва",
     rehearsalSchedule: "Среда и суббота, 19:00",
@@ -441,7 +442,7 @@ export const groups: Group[] = [
         description: "Ищем вокалиста/вокалистку с опытом",
       },
     ],
-    socialLinks: { vk: "the_voltage_band" },
+    socialLinks: { vk: "the_echoes_band" },
   },
   {
     id: 2,
@@ -450,7 +451,7 @@ export const groups: Group[] = [
     genre: "Джаз",
     members: [2, 5, 6],
     creatorId: 2,
-    avatar: null,
+    avatar: "band-2.png",
     createdAt: "2024-02-20",
     city: "Санкт-Петербург",
     rehearsalSchedule: "Пятница, 20:00",
@@ -469,7 +470,7 @@ export const groups: Group[] = [
     genre: "Электроника",
     members: [4],
     creatorId: 4,
-    avatar: null,
+    avatar: "band-3.png",
     createdAt: "2024-03-10",
     city: "Казань",
     rehearsalSchedule: "По договорённости",
@@ -546,6 +547,7 @@ export const venues: Venue[] = [
     id: 1,
     name: 'Студия "Звук"',
     address: "ул. Тверская, 15",
+    avatar: "venue-1.png",
     coordinates: [55.751244, 37.587093],
     city: "Москва",
     capacity: 10,
@@ -565,6 +567,7 @@ export const venues: Venue[] = [
     id: 2,
     name: 'Репетиционная база "Гараж"',
     address: "ул. Арбат, 42",
+    avatar: "venue-2.png",
     coordinates: [55.74221, 37.565128],
     city: "Москва",
     type: "репетиционная база",
@@ -584,6 +587,7 @@ export const venues: Venue[] = [
     name: 'Клуб "Синий слон"',
     address: "Невский пр., 100",
     city: "Москва",
+    avatar: "venue-3.png",
     coordinates: [55.707879, 37.587093],
     type: "концертный зал",
     equipment: ["Звук JBL", "Свет Chauvet", "Сцена 6x4м"],
@@ -599,11 +603,12 @@ export const venues: Venue[] = [
   },
   {
     id: 4,
-    name: 'Концертный зал "Аврора"',
+    name: 'Концертный зал "Калисто"',
     address: "ул. Баумана, 25",
     coordinates: [55.773399, 37.633522],
     city: "Казань",
     type: "концертный зал",
+    avatar: "venue-4.png",
     equipment: ["Звук L-Acoustics", "Профессиональный свет", "Сцена 12x8м"],
     photos: [],
     rating: 4.9,

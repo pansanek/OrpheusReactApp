@@ -1,22 +1,28 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth, type AppNotification } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import Link from "next/link";
+import { useAuth, type AppNotification } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Bell, Users, Building2, MessageCircle, CheckCheck } from 'lucide-react';
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Bell,
+  Users,
+  Building2,
+  MessageCircle,
+  CheckCheck,
+} from "lucide-react";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'только что';
+  if (mins < 1) return "только что";
   if (mins < 60) return `${mins} мин. назад`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours} ч. назад`;
@@ -24,14 +30,17 @@ function timeAgo(isoString: string): string {
   return `${days} д. назад`;
 }
 
-function NotificationItem({ notification, onRead }: {
+function NotificationItem({
+  notification,
+  onRead,
+}: {
   notification: AppNotification;
   onRead: (id: number) => void;
 }) {
-  if (notification.type === 'group_invite') {
+  if (notification.type === "group_invite") {
     return (
       <div
-        className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!notification.read ? 'bg-primary/5' : ''}`}
+        className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!notification.read ? "bg-primary/5" : ""}`}
         onClick={() => onRead(notification.id)}
       >
         <div className="flex gap-3">
@@ -43,19 +52,19 @@ function NotificationItem({ notification, onRead }: {
               <Link
                 href={`/profile/${notification.fromUserId}`}
                 className="font-semibold hover:text-primary transition-colors"
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
                 {notification.fromUserName}
-              </Link>
-              {' '}приглашает вас в группу{' '}
+              </Link>{" "}
+              приглашает вас в группу{" "}
               <Link
                 href={`/groups/${notification.groupId}`}
                 className="font-semibold hover:text-primary transition-colors"
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
                 {notification.groupName}
-              </Link>
-              {' '}на позицию{' '}
+              </Link>{" "}
+              на позицию{" "}
               <span className="font-semibold">{notification.position}</span>
             </p>
             {notification.message && (
@@ -63,7 +72,9 @@ function NotificationItem({ notification, onRead }: {
                 "{notification.message}"
               </p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">{timeAgo(notification.createdAt)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {timeAgo(notification.createdAt)}
+            </p>
           </div>
           {!notification.read && (
             <div className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-primary" />
@@ -73,13 +84,16 @@ function NotificationItem({ notification, onRead }: {
     );
   }
 
-  if (notification.type === 'booking_request') {
+  if (notification.type === "booking_request") {
     const dateStr = notification.date
-      ? new Date(notification.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
-      : '';
+      ? new Date(notification.date).toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+        })
+      : "";
     return (
       <div
-        className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!notification.read ? 'bg-primary/5' : ''}`}
+        className={`px-4 py-3 hover:bg-muted/50 transition-colors ${!notification.read ? "bg-primary/5" : ""}`}
         onClick={() => onRead(notification.id)}
       >
         <div className="flex gap-3">
@@ -91,22 +105,25 @@ function NotificationItem({ notification, onRead }: {
               <Link
                 href={`/profile/${notification.fromUserId}`}
                 className="font-semibold hover:text-primary transition-colors"
-                onClick={e => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
               >
                 {notification.fromUserName}
-              </Link>
-              {' '}оставил заявку на бронирование{' '}
+              </Link>{" "}
+              оставил заявку на бронирование{" "}
               <span className="font-semibold">{notification.venueName}</span>
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              {dateStr} в {notification.time} &middot; {notification.hours} ч. &middot; {notification.totalPrice.toLocaleString('ru-RU')} руб.
+              {dateStr} в {notification.time} &middot; {notification.hours} ч.
+              &middot; {notification.totalPrice.toLocaleString("ru-RU")} руб.
             </p>
             {notification.message && (
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 italic">
                 "{notification.message}"
               </p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">{timeAgo(notification.createdAt)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {timeAgo(notification.createdAt)}
+            </p>
           </div>
           {!notification.read && (
             <div className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-primary" />
@@ -128,10 +145,8 @@ export function NotificationsPanel() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge
-              className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center text-[10px] font-bold bg-warning text-warning-foreground border-0 rounded-full"
-            >
-              {unreadCount > 9 ? '9+' : unreadCount}
+            <Badge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 flex items-center justify-center text-[10px] font-bold bg-warning text-warning-foreground border-0 rounded-full">
+              {unreadCount > 9 ? "9+" : unreadCount}
             </Badge>
           )}
         </Button>
@@ -170,7 +185,11 @@ export function NotificationsPanel() {
           <ScrollArea className="max-h-[420px]">
             <div className="divide-y divide-border">
               {notifications.map((n, idx) => (
-                <NotificationItem key={n.id} notification={n} onRead={markRead} />
+                <NotificationItem
+                  key={n.id}
+                  notification={n}
+                  onRead={markRead}
+                />
               ))}
             </div>
           </ScrollArea>

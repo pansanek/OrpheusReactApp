@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useAppDispatch, useCurrentChat } from '@/store/hooks';
-import { addMessage } from '@/store/slices/chatSlice';
-import { Message } from '@/store/types/chat.types';
-import { Button } from '@/components/ui/button';
+import React, { useState, useRef, useEffect } from "react";
+import { useAppDispatch, useCurrentChat } from "@/store/hooks";
+import { addMessage } from "@/store/slices/chatSlice";
+import { Message } from "@/store/types/chat.types";
+import { Button } from "@/components/ui/button";
 
 export const ChatInputArea: React.FC = () => {
   const dispatch = useAppDispatch();
   const currentChat = useCurrentChat();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isComposing, setIsComposing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
   }, [message]);
@@ -29,12 +29,12 @@ export const ChatInputArea: React.FC = () => {
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
       chatId: currentChat.id,
-      senderId: 'user-current',
-      senderName: 'Вы',
+      senderId: "user-current",
+      senderName: "Вы",
       senderAvatar: undefined,
       content: message.trim(),
       timestamp: Date.now(),
-      type: 'text',
+      type: "text",
       read: true,
     };
 
@@ -42,18 +42,18 @@ export const ChatInputArea: React.FC = () => {
       addMessage({
         chatId: currentChat.id,
         message: newMessage,
-      })
+      }),
     );
 
-    setMessage('');
+    setMessage("");
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Send on Ctrl+Enter or Cmd+Enter
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !isComposing) {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !isComposing) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -73,7 +73,7 @@ export const ChatInputArea: React.FC = () => {
   }
 
   return (
-    <div className="border-t border-border bg-background px-4 py-3">
+    <div className="flex-shrink-0 border-t bg-background p-3">
       <div className="flex items-end gap-2">
         {/* Attachment button */}
         <Button
@@ -98,7 +98,7 @@ export const ChatInputArea: React.FC = () => {
             placeholder="Напишите сообщение..."
             className="w-full px-4 py-2.5 resize-none rounded-2xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             rows={1}
-            style={{ minHeight: '40px', maxHeight: '120px' }}
+            style={{ minHeight: "40px", maxHeight: "120px" }}
           />
         </div>
 

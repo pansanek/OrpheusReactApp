@@ -2,7 +2,12 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { getMusicianById, VENUE_ADMINS, VENUE_TYPES } from "@/lib/mock-data";
+import {
+  getMusicianById,
+  Venue,
+  VENUE_ADMINS,
+  VENUE_TYPES,
+} from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth-context";
 import {
   Card,
@@ -50,10 +55,12 @@ import {
   Trash2,
   Save,
   X,
+  Calendar,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { BookingDialog } from "@/components/booking-dialog";
 export default function VenuePage() {
   const params = useParams();
   const venueId = Number(params?.id);
@@ -61,7 +68,7 @@ export default function VenuePage() {
   const { currentUser, venuesState, updateVenue, sendBookingRequest } =
     useAuth();
   const venue = venuesState.find((v) => v.id === venueId);
-
+  const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
   // Booking state
   const [bookingDate, setBookingDate] = useState("");
   const [bookingTime, setBookingTime] = useState("");
@@ -208,48 +215,6 @@ export default function VenuePage() {
     }
   };
 
-  const handleBooking = () => {
-    if (!currentUser) return;
-    if (!bookingDate) {
-      toast({ title: "Выберите дату", variant: "destructive" });
-      return;
-    }
-    if (!bookingTime) {
-      toast({ title: "Выберите время", variant: "destructive" });
-      return;
-    }
-    const hours = parseInt(bookingHours);
-    if (!hours || hours < 1) {
-      toast({ title: "Укажите количество часов", variant: "destructive" });
-      return;
-    }
-
-    const dateLabel = new Date(bookingDate).toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
-    sendBookingRequest({
-      venueId: venue.id,
-      venueName: venue.name,
-      venueAdminId: adminId,
-      date: bookingDate,
-      time: bookingTime,
-      hours,
-      totalPrice,
-      message: bookingMessage,
-    });
-
-    setBookedSummary(`${dateLabel} в ${bookingTime}, ${hours} ч.`);
-    setIsBooked(true);
-    setIsBookingOpen(false);
-    toast({
-      title: "Заявка отправлена!",
-      description: `Администратор "${venue.name}" получит уведомление.`,
-    });
-  };
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Link
@@ -265,10 +230,25 @@ export default function VenuePage() {
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="w-full lg:w-72 aspect-video lg:aspect-auto lg:h-48 bg-muted rounded-xl flex flex-col items-center justify-center gap-2 shrink-0">
-              {getTypeIcon(venue.type)}
+              {/* {getTypeIcon(venue.type)}
               <span className="text-xs text-muted-foreground">
                 {getTypeLabel(venue.type)}
-              </span>
+              </span> */}
+              <Avatar className="lg:h-48 lg:w-72 w-full lg:aspect-auto">
+                <AvatarImage
+                  src={
+                    venue.avatar
+                      ? venue.avatar.startsWith("/")
+                        ? venue.avatar
+                        : `/${venue.avatar}`
+                      : undefined
+                  }
+                  alt={venue.name}
+                />
+                <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                  {venue.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             <div className="flex-1">
@@ -385,8 +365,8 @@ export default function VenuePage() {
                   </p>
                 </div>
               ) : (
-                <Button size="lg" onClick={() => setIsBookingOpen(true)}>
-                  <CalendarDays className="h-4 w-4 mr-2" />
+                <Button size="sm" onClick={() => setBookingVenue(venue)}>
+                  <Calendar className="h-4 w-4 mr-2" />
                   Забронировать
                 </Button>
               )}
@@ -445,12 +425,27 @@ export default function VenuePage() {
           )}
           {adminMusician && (
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+              {/* <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                 {adminMusician.name
                   .split(" ")
                   .map((n) => n[0])
                   .join("")}
-              </div>
+              </div> */}
+              <Avatar className="h-9 w-9">
+                <AvatarImage
+                  src={
+                    adminMusician.avatar
+                      ? adminMusician.avatar.startsWith("/")
+                        ? adminMusician.avatar
+                        : `/${adminMusician.avatar}`
+                      : undefined
+                  }
+                  alt={adminMusician.name}
+                />
+                <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                  {adminMusician.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">
                   Администратор площадки
@@ -473,320 +468,15 @@ export default function VenuePage() {
       </Card>
 
       {/* Booking Dialog */}
-      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-        <DialogContent className="sm:max-w-[460px]">
-          <DialogHeader>
-            <DialogTitle>Заявка на бронирование</DialogTitle>
-            <DialogDescription>
-              {venue.name} — {venue.pricePerHour.toLocaleString("ru-RU")} ₽/час
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-2">
-                <Label htmlFor="book-date">Дата</Label>
-                <Input
-                  id="book-date"
-                  type="date"
-                  value={bookingDate}
-                  min={new Date().toISOString().split("T")[0]}
-                  onChange={(e) => setBookingDate(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="book-time">Время начала</Label>
-                <Input
-                  id="book-time"
-                  type="time"
-                  value={bookingTime}
-                  onChange={(e) => setBookingTime(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="book-hours">Продолжительность (ч.)</Label>
-              <Input
-                id="book-hours"
-                type="number"
-                min="1"
-                max="12"
-                value={bookingHours}
-                onChange={(e) => setBookingHours(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="book-message">Комментарий</Label>
-              <Textarea
-                id="book-message"
-                placeholder="Опишите ваши цели, состав, пожелания..."
-                rows={3}
-                value={bookingMessage}
-                onChange={(e) => setBookingMessage(e.target.value)}
-              />
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {bookingHours} ч. ×{" "}
-                  {venue.pricePerHour.toLocaleString("ru-RU")} ₽
-                </p>
-                <p className="text-xs text-muted-foreground">Итого к оплате</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalPrice.toLocaleString("ru-RU")} ₽
-              </p>
-            </div>
-            {adminMusician && (
-              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                  {adminMusician.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Администратор</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {adminMusician.name}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBookingOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleBooking}>Отправить заявку</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Venue Dialog (admin only) */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Настройки учреждения</DialogTitle>
-            <DialogDescription>
-              Редактируйте публичную информацию о вашей площадке
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-5 py-2">
-            {/* Basic */}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="v-name">Название *</Label>
-                <Input
-                  id="v-name"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Тип площадки</Label>
-                <Select value={editType} onValueChange={setEditType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VENUE_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="v-desc">Описание</Label>
-              <Textarea
-                id="v-desc"
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="v-city">Город</Label>
-                <Input
-                  id="v-city"
-                  value={editCity}
-                  onChange={(e) => setEditCity(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="v-address">Адрес</Label>
-                <Input
-                  id="v-address"
-                  value={editAddress}
-                  onChange={(e) => setEditAddress(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="v-price">Цена, ₽/час</Label>
-                <Input
-                  id="v-price"
-                  type="number"
-                  min="0"
-                  value={editPrice}
-                  onChange={(e) => setEditPrice(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="v-hours">Часы работы</Label>
-                <Input
-                  id="v-hours"
-                  value={editWorkingHours}
-                  onChange={(e) => setEditWorkingHours(e.target.value)}
-                  placeholder="10:00 — 22:00"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="v-phone">Телефон</Label>
-                <Input
-                  id="v-phone"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  placeholder="+7 (999) 000-00-00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="v-email">Email</Label>
-                <Input
-                  id="v-email"
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Equipment */}
-            <div className="grid gap-3">
-              <Label>Оборудование</Label>
-              {editEquipment.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {editEquipment.map((item, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-muted text-foreground"
-                    >
-                      {item}
-                      <button
-                        type="button"
-                        onClick={() => removeEquipmentItem(i)}
-                        className="text-muted-foreground hover:text-destructive transition-colors ml-1"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <Input
-                  value={newEquipment}
-                  onChange={(e) => setNewEquipment(e.target.value)}
-                  placeholder="Напр.: Микрофон Shure SM7B"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addEquipmentItem();
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addEquipmentItem}
-                  disabled={!newEquipment.trim()}
-                  className="bg-transparent shrink-0"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Social */}
-            <div className="grid gap-2">
-              <Label className="flex items-center gap-2">
-                <Link2 className="h-4 w-4" />
-                Социальные сети
-              </Label>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="grid gap-1.5">
-                  <Label
-                    htmlFor="v-vk"
-                    className="text-xs text-muted-foreground"
-                  >
-                    VK
-                  </Label>
-                  <Input
-                    id="v-vk"
-                    value={editVk}
-                    onChange={(e) => setEditVk(e.target.value)}
-                    placeholder="vk_group"
-                  />
-                </div>
-                <div className="grid gap-1.5">
-                  <Label
-                    htmlFor="v-inst"
-                    className="text-xs text-muted-foreground"
-                  >
-                    Instagram
-                  </Label>
-                  <Input
-                    id="v-inst"
-                    value={editInstagram}
-                    onChange={(e) => setEditInstagram(e.target.value)}
-                    placeholder="@handle"
-                  />
-                </div>
-                <div className="grid gap-1.5">
-                  <Label
-                    htmlFor="v-web"
-                    className="text-xs text-muted-foreground"
-                  >
-                    Сайт
-                  </Label>
-                  <Input
-                    id="v-web"
-                    value={editWebsite}
-                    onChange={(e) => setEditWebsite(e.target.value)}
-                    placeholder="site.ru"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleSaveVenue}>
-              <Save className="h-4 w-4 mr-1.5" />
-              Сохранить
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {bookingVenue && (
+        <BookingDialog
+          open={bookingVenue !== null}
+          onOpenChange={(open) => {
+            if (!open) setBookingVenue(null);
+          }}
+          venue={bookingVenue}
+        />
+      )}
     </div>
   );
 }

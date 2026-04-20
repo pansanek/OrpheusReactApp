@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
   Newspaper,
@@ -13,16 +13,18 @@ import {
   Tags,
   Sparkles,
   User,
-} from 'lucide-react';
+  MessageCircle,
+} from "lucide-react";
 
 const navItems = [
-  { href: '/', label: 'Главная', icon: Home },
-  { href: '/feed', label: 'Лента', icon: Newspaper },
-  { href: '/search', label: 'Поиск', icon: Search },
-  { href: '/groups', label: 'Группы', icon: Users },
-  { href: '/venues', label: 'Площадки', icon: Building2 },
-  { href: '/ai-tags', label: 'ИИ-теги', icon: Tags },
-  { href: '/recommendations', label: 'Рекомендации', icon: Sparkles },
+  { href: "/", label: "Главная", icon: Home },
+  { href: "/feed", label: "Лента", icon: Newspaper },
+  { href: "/search", label: "Поиск", icon: Search },
+  { href: "/chat", label: "Чат", icon: MessageCircle },
+  { href: "/groups", label: "Группы", icon: Users },
+  { href: "/venues", label: "Площадки", icon: Building2 },
+  { href: "/ai-tags", label: "ИИ-теги", icon: Tags },
+  { href: "/recommendations", label: "Рекомендации", icon: Sparkles },
 ];
 
 export function Sidebar() {
@@ -41,10 +43,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                  ? "bg-primary text-primary-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -78,7 +80,7 @@ export function Sidebar() {
           Жанры
         </h3>
         <div className="flex flex-wrap gap-1.5 px-3">
-          {['Рок', 'Джаз', 'Поп', 'Электроника'].map((genre) => (
+          {["Рок", "Джаз", "Поп", "Электроника"].map((genre) => (
             <Link
               key={genre}
               href={`/search?genre=${encodeURIComponent(genre)}`}
@@ -89,6 +91,15 @@ export function Sidebar() {
           ))}
         </div>
       </div>
+      <button
+        onClick={() => {
+          localStorage.removeItem("umpsm_users");
+          window.location.reload();
+        }}
+        className="fixed bottom-4 right-4 px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+      >
+        Сбросить пользователей
+      </button>
     </aside>
   );
 }

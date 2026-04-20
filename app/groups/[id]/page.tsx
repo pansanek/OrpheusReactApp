@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import {
   getMusicianById,
@@ -153,7 +153,7 @@ export default function GroupPage() {
           Группа не найдена
         </h1>
         <p className="text-muted-foreground mb-6">
-          Группа с ID {id} не существует
+          Группа с ID {groupId} не существует
         </p>
         <Link href="/groups">
           <Button>Вернуться к группам</Button>
@@ -196,7 +196,16 @@ export default function GroupPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={group.avatar ?? undefined} alt={group.name} />
+              <AvatarImage
+                src={
+                  group.avatar
+                    ? group.avatar.startsWith("/")
+                      ? group.avatar
+                      : `/${group.avatar}`
+                    : undefined
+                }
+                alt={group.name}
+              />
               <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
                 {group.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -355,6 +364,16 @@ export default function GroupPage() {
                       <div className="flex items-center gap-4">
                         <Link href={`/profile/${member.id}`}>
                           <Avatar className="h-12 w-12">
+                            <AvatarImage
+                              src={
+                                member.avatar
+                                  ? member.avatar.startsWith("/")
+                                    ? member.avatar
+                                    : `/${member.avatar}`
+                                  : undefined
+                              }
+                              alt={member.name}
+                            />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getInitials(member.name)}
                             </AvatarFallback>

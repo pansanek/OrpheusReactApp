@@ -1,16 +1,25 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { useCurrentChatMessages, useCurrentChat } from "@/store/hooks";
 import { ChatType } from "@/store/types/chat.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Phone, Video, Users, Building2 } from "lucide-react";
+import {
+  MoreVertical,
+  Phone,
+  Video,
+  Users,
+  Building2,
+  ArrowLeft,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { ChatMessage } from "./ChatMessage";
 
 export const ChatMessagesArea: React.FC = () => {
+  const { currentUser } = useAuth();
   const messages = useCurrentChatMessages();
   const currentChat = useCurrentChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -26,7 +35,6 @@ export const ChatMessagesArea: React.FC = () => {
 
   const isGroupChat = currentChat.type === ChatType.GROUP;
   const showAvatars = isGroupChat;
-
   const getChatIcon = () => {
     if (currentChat.type === ChatType.GROUP) {
       return <Users className="h-5 w-5" />;
@@ -38,7 +46,7 @@ export const ChatMessagesArea: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Chat header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between px-4 py-3">
@@ -92,9 +100,9 @@ export const ChatMessagesArea: React.FC = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 px-4">
+      <ScrollArea className="flex-1 h-0">
         {messages.length > 0 ? (
-          <div className="py-4 space-y-3">
+          <div className="py-4 space-y-3 px-4">
             {messages.map((message, index) => {
               const prevMessage = messages[index - 1];
               const showDateSeparator =
@@ -126,7 +134,9 @@ export const ChatMessagesArea: React.FC = () => {
                   )}
                   <ChatMessage
                     message={message}
-                    isOwnMessage={message.senderId === "user-current"}
+                    isOwnMessage={
+                      message.senderId === currentUser?.id.toString()
+                    }
                     showAvatar={showAvatars}
                     showSenderName={isGroupChat}
                   />

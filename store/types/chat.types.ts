@@ -26,11 +26,14 @@ export interface Message {
   chatId: string;
   senderId: string;
   senderName: string;
-  senderAvatar?: string;
+  senderAvatar: string | null;
   content: string;
   timestamp: number;
-  type: "text"; // Для будущего расширения: 'image', 'video', 'audio'
+  status: "pending" | "sent" | "delivered" | "read" | "error";
+  // attachments?: Attachment[];
+  type: "text";
   read?: boolean;
+  replyTo?: string;
 }
 
 export interface Chat {

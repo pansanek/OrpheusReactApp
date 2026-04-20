@@ -68,10 +68,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <Avatar className="h-12 w-12">
-          <AvatarImage
-            src={chat.avatar || "/placeholder.svg"}
-            alt={chat.name}
-          />
+          <AvatarImage src={chat.avatar ?? undefined} alt={chat.name} />
           <AvatarFallback className="bg-primary/10 text-primary">
             {chat.type === ChatType.DIRECT
               ? chat.name.charAt(0).toUpperCase()
