@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Users, Plus, Search, Music } from "lucide-react";
+import { CreateGroupDialog } from "@/components/create-group-dialog";
 
 export default function GroupsPage() {
   const { currentUser } = useAuth();
@@ -51,7 +52,7 @@ export default function GroupsPage() {
       g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       g.genre.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const getInitials = (name: string) => name.substring(0, 2).toUpperCase();
 
   const getGenreColor = (genre: string) => {
@@ -161,59 +162,12 @@ export default function GroupsPage() {
         </div>
 
         {currentUser && (
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Создать группу
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Создание новой группы</DialogTitle>
-                <DialogDescription>
-                  Заполните информацию о вашем музыкальном коллективе
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div>
-                  <label className="text-sm font-medium">Название группы</label>
-                  <Input placeholder="Введите название" className="mt-1.5" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Жанр</label>
-                  <Select>
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue placeholder="Выберите жанр" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GENRES.map((genre) => (
-                        <SelectItem key={genre} value={genre}>
-                          {genre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Описание</label>
-                  <Textarea
-                    placeholder="Расскажите о своей группе..."
-                    className="mt-1.5"
-                  />
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={() => setIsCreateOpen(false)}
-                >
-                  Создать группу
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Создать группу
+          </Button>
         )}
       </div>
-
       {/* Search */}
       <div className="relative max-w-md mb-6">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -285,6 +239,10 @@ export default function GroupsPage() {
           ))}
         </div>
       )}
+      <CreateGroupDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </div>
   );
 }

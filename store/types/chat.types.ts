@@ -31,7 +31,7 @@ export interface Message {
   timestamp: number;
   status: "pending" | "sent" | "delivered" | "read" | "error";
   // attachments?: Attachment[];
-  type: "text";
+  type: string;
   read?: boolean;
   replyTo?: string;
 }

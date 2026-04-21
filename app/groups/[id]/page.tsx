@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   getMusicianById,
@@ -8,6 +8,7 @@ import {
   GENRES,
   INSTRUMENTS,
   type OpenPosition,
+  musicians,
 } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -54,18 +55,57 @@ import {
   Plus,
   Save,
   Trash2,
+  Camera,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
+import { normalizeImagePath } from "@/lib/utils";
+import { RequestToJoinDialog } from "@/components/request-to-join-dialog";
+import { MusicianCard } from "@/components/musician-card";
 
 export default function GroupPage() {
   const params = useParams();
   const groupId = Number(params?.id);
-  const { currentUser, groupsState, updateGroup } = useAuth();
+  const {
+    currentUser,
+    groupsState,
+    updateGroup,
+    joinRequests,
+    sendJoinRequest,
+    acceptJoinRequest,
+    declineJoinRequest,
+  } = useAuth();
   const group = groupsState.find((g) => g.id === groupId);
-
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    group?.avatar || null,
+  );
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
 
+  useEffect(() => {
+    setAvatarUrl(group?.avatar || null);
+  }, [group?.id, group?.avatar]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const url = ev.target?.result as string;
+        setAvatarUrl(url);
+        updateGroup(groupId, { avatar: url });
+        toast({ title: "Аватар обновлён" });
+      };
+      reader.onerror = () => {
+        toast({ title: "Ошибка загрузки", variant: "destructive" });
+      };
+      reader.readAsDataURL(file);
+    },
+    [updateGroup],
+  );
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -195,22 +235,44 @@ export default function GroupPage() {
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row items-start gap-6">
-            <Avatar className="h-24 w-24">
-              <AvatarImage
-                src={
-                  group.avatar
-                    ? group.avatar.startsWith("/")
+            <div className="relative shrink-0">
+              <Avatar className="h-24 w-24">
+                <AvatarImage
+                  src={
+                    normalizeImagePath(avatarUrl)
                       ? group.avatar
-                      : `/${group.avatar}`
-                    : undefined
-                }
-                alt={group.name}
-              />
-              <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
-                {group.name.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-
+                        ? group.avatar.startsWith("/")
+                          ? group.avatar
+                          : `/${group.avatar}`
+                        : undefined
+                      : undefined
+                  }
+                  alt={group.name}
+                />
+                <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                  {group.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {isCreator ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+                    title="Загрузить фото"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </div>
+              ) : null}
+            </div>
             <div className="flex-1">
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
@@ -237,7 +299,7 @@ export default function GroupPage() {
                     Настройки
                   </Button>
                 ) : !isMember && currentUser ? (
-                  <Button size="sm">
+                  <Button size="sm" onClick={() => setRequestDialogOpen(true)}>
                     <UserPlus className="h-4 w-4 mr-1.5" />
                     Присоединиться
                   </Button>
@@ -349,6 +411,12 @@ export default function GroupPage() {
             <Newspaper className="h-4 w-4" />
             Посты ({groupPosts.length})
           </TabsTrigger>
+          {isCreator && (
+            <TabsTrigger value="requests" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              Запросы ({joinRequests[group.id]?.length ?? 0})
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="members">
@@ -465,6 +533,92 @@ export default function GroupPage() {
             </Card>
           )}
         </TabsContent>
+        {isCreator && (
+          <TabsContent value="requests">
+            {joinRequests[group.id]?.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {joinRequests[group.id].map((req) => {
+                  const musician = musicians.find((m) => m.id === req.userId);
+                  if (!musician) return null;
+                  return (
+                    <Card
+                      key={req.userId}
+                      className="hover:shadow-md transition-shadow"
+                    >
+                      <CardContent className="p-0">
+                        <div className="p-4 border-b">
+                          <MusicianCard
+                            musician={musician}
+                            showActions={false}
+                          />
+                        </div>
+                        {req.message && (
+                          <div className="mt-3 p-3 bg-muted rounded-lg">
+                            <p className="text-sm text-muted-foreground italic">
+                              "{req.message}"
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(req.createdAt).toLocaleDateString(
+                                "ru-RU",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </p>
+                          </div>
+                        )}
+                        <div className="p-4 border-t bg-muted/20">
+                          <div className="flex flex-col gap-3">
+                            <Badge variant="outline" className="text-xs">
+                              {req.position}
+                            </Badge>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                className="h-8 px-3"
+                                onClick={() => {
+                                  acceptJoinRequest(group.id, req.userId);
+                                }}
+                              >
+                                Принять
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-3 bg-transparent"
+                                onClick={() => {
+                                  declineJoinRequest(group.id, req.userId);
+                                }}
+                              >
+                                Отклонить
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <UserPlus className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    Нет запросов на вступление
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Когда музыканты отправят запросы, они появятся здесь
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Edit Group Dialog */}
@@ -676,6 +830,14 @@ export default function GroupPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <RequestToJoinDialog
+        open={requestDialogOpen}
+        onOpenChange={setRequestDialogOpen}
+        groupId={group.id}
+        groupName={group.name}
+        groupCreatorId={group.creatorId}
+      />
     </div>
   );
 }

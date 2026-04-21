@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Chat, ChatState, ChatType, Message } from "../types/chat.types";
 import { musicians, venues } from "@/lib/mock-data";
 import { RootState } from "../store";
@@ -184,17 +184,27 @@ const chatSlice = createSlice({
     createGroupChat: (
       state,
       action: PayloadAction<{
+        id: string;
         name: string;
+        avatar?: string;
         description?: string;
         participantIds: string[];
         currentUserId: string;
+        groupId?: string;
       }>,
     ) => {
-      const { name, description, participantIds, currentUserId } =
-        action.payload;
+      const {
+        id,
+        name,
+        description,
+        avatar,
+        participantIds,
+        currentUserId,
+        groupId,
+      } = action.payload;
 
       const newChat: Chat = {
-        id: `chat-${Date.now()}`,
+        id: id,
         type: ChatType.GROUP,
         name,
         description,
@@ -204,6 +214,7 @@ const chatSlice = createSlice({
         admin: currentUserId,
         membersCount: participantIds.length + 1,
         unreadCount: 0,
+        avatar: avatar,
       };
 
       state.chats.unshift(newChat);
@@ -296,6 +307,11 @@ const chatSlice = createSlice({
     },
   },
 });
+
+export const addParticipantToChat = createAsyncThunk(
+  "chat/addParticipant",
+  async (payload: { chatId: string; userId: number }) => payload,
+);
 
 export const {
   selectChat,

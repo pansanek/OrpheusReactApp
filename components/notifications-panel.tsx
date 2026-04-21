@@ -17,6 +17,7 @@ import {
   Building2,
   MessageCircle,
   CheckCheck,
+  UserPlus,
 } from "lucide-react";
 
 function timeAgo(isoString: string): string {
@@ -83,7 +84,54 @@ function NotificationItem({
       </div>
     );
   }
-
+  if (notification.type === "group_join_request") {
+    return (
+      <div
+        className={`px-4 py-3 hover:bg-muted/50 transition-colors ${
+          !notification.read ? "bg-primary/5" : ""
+        }`}
+        onClick={() => onRead(notification.id)}
+      >
+        <div className="flex gap-3">
+          <div className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-[var(--genre-rock)]/20 flex items-center justify-center">
+            <UserPlus className="h-4 w-4 text-[var(--genre-rock)]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-foreground leading-snug">
+              <Link
+                href={`/profile/${notification.fromUserId}`}
+                className="font-semibold hover:text-primary transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {notification.fromUserName}
+              </Link>{" "}
+              запросил вступление в вашу группу{" "}
+              <Link
+                href={`/groups/${notification.groupId}`}
+                className="font-semibold hover:text-primary transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {notification.groupName}
+              </Link>{" "}
+              на позицию{" "}
+              <span className="font-semibold">{notification.position}</span>
+            </p>
+            {notification.message && (
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2 italic">
+                "{notification.message}"
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {timeAgo(notification.createdAt)}
+            </p>
+          </div>
+          {!notification.read && (
+            <div className="shrink-0 mt-1.5 w-2 h-2 rounded-full bg-primary" />
+          )}
+        </div>
+      </div>
+    );
+  }
   if (notification.type === "booking_request") {
     const dateStr = notification.date
       ? new Date(notification.date).toLocaleDateString("ru-RU", {

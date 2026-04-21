@@ -172,7 +172,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </p>
           )}
         </div>
-        {/* <button
+        <button
           onClick={() => {
             localStorage.removeItem("umpsm_users");
             window.location.reload();
@@ -180,7 +180,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           className="fixed bottom-4 right-4 px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600"
         >
           Сбросить пользователей
-        </button> */}
+        </button>
       </aside>
     </>
   );

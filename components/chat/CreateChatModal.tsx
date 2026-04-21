@@ -56,6 +56,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
 
     dispatch(
       createGroupChat({
+        id: `chat-${Date.now()}`,
         name: groupName,
         participantIds: selectedUsers,
         currentUserId: currentUser?.id.toString() || "user",

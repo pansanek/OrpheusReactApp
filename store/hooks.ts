@@ -5,6 +5,9 @@ import { useMemo } from "react";
 import type { RootState, AppDispatch } from "./store";
 import { Chat, ChatType } from "./types/chat.types";
 import { useAuth } from "@/lib/auth-context";
+import { selectChatsForUser } from "@/utils/chatSelectors";
+import { getChatDisplayInfo } from "@/utils/getChatDisplayInfo";
+import { getInitials } from "@/utils/chatUtils";
 
 // Типизированные версии useDispatch и useSelector
 export const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -14,30 +17,49 @@ export const useAppSelector = <TSelected>(
 
 // Хук для получения всех чатов с фильтром
 export const useFilteredChats = () => {
-  const chats = useAppSelector((state) => state.chats.chats);
   const filter = useAppSelector((state) => state.chats.filter);
   const { currentUser } = useAuth();
-  const currentUserId = currentUser?.id;
+  const currentUserId = currentUser?.id.toString();
+  const chats = useAppSelector((state) =>
+    selectChatsForUser(state, currentUserId),
+  );
+
   return useMemo(() => {
-    return chats.filter((chat) => {
+    const filtered = chats.filter((chat) => {
       if (
         !currentUserId ||
         !chat.participants?.includes(currentUserId.toString())
       ) {
         return false;
       }
-      // Фильтр по типу
+
       if (filter.type !== "all" && chat.type !== filter.type) {
         return false;
       }
 
-      // Фильтр по поисковому запросу
       if (filter.searchQuery) {
+        const { displayName } = getChatDisplayInfo(
+          chat,
+          currentUserId.toString(),
+        );
         const query = filter.searchQuery.toLowerCase();
-        return chat.name.toLowerCase().includes(query);
+        return displayName.toLowerCase().includes(query);
       }
 
       return true;
+    });
+
+    return filtered.map((chat) => {
+      const { displayName, displayAvatar } = getChatDisplayInfo(
+        chat,
+        currentUserId?.toString(),
+      );
+
+      return {
+        ...chat,
+        name: displayName,
+        avatar: displayAvatar || getInitials(displayName),
+      };
     });
   }, [chats, filter, currentUserId]);
 };

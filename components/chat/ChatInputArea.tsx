@@ -5,9 +5,11 @@ import { useAppDispatch, useCurrentChat } from "@/store/hooks";
 import { addMessage } from "@/store/slices/chatSlice";
 import { Message } from "@/store/types/chat.types";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
 
 export const ChatInputArea: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { currentUser } = useAuth();
   const currentChat = useCurrentChat();
   const [message, setMessage] = useState("");
   const [isComposing, setIsComposing] = useState(false);
@@ -22,6 +24,7 @@ export const ChatInputArea: React.FC = () => {
   }, [message]);
 
   const handleSendMessage = () => {
+    if (!currentUser) return;
     if (!currentChat || !message.trim()) {
       return;
     }
@@ -29,13 +32,14 @@ export const ChatInputArea: React.FC = () => {
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
       chatId: currentChat.id,
-      senderId: "user-current",
-      senderName: "Вы",
-      senderAvatar: undefined,
+      senderId: currentUser.id.toString(),
+      senderName: currentUser.name,
+      senderAvatar: currentUser?.avatar,
       content: message.trim(),
       timestamp: Date.now(),
       type: "text",
-      read: true,
+      read: false,
+      status: "sent",
     };
 
     dispatch(

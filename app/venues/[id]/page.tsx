@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   getMusicianById,
@@ -56,6 +56,7 @@ import {
   Save,
   X,
   Calendar,
+  Camera,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
@@ -77,7 +78,9 @@ export default function VenuePage() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
   const [bookedSummary, setBookedSummary] = useState("");
-
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(
+    venue?.avatar || null,
+  );
   // Edit state
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editName, setEditName] = useState("");
@@ -120,7 +123,30 @@ export default function VenuePage() {
     setEditEquipment((prev) => [...prev, item]);
     setNewEquipment("");
   };
+  useEffect(() => {
+    setAvatarUrl(venue?.avatar || null);
+  }, [venue?.id, venue?.avatar]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const url = ev.target?.result as string;
+        setAvatarUrl(url);
+        updateVenue(venueId, { avatar: url });
+        toast({ title: "Аватар обновлён" });
+      };
+      reader.onerror = () => {
+        toast({ title: "Ошибка загрузки", variant: "destructive" });
+      };
+      reader.readAsDataURL(file);
+    },
+    [updateVenue],
+  );
   const removeEquipmentItem = (index: number) => {
     setEditEquipment((prev) => prev.filter((_, i) => i !== index));
   };
@@ -234,21 +260,42 @@ export default function VenuePage() {
               <span className="text-xs text-muted-foreground">
                 {getTypeLabel(venue.type)}
               </span> */}
-              <Avatar className="lg:h-48 lg:w-72 w-full lg:aspect-auto">
-                <AvatarImage
-                  src={
-                    venue.avatar
-                      ? venue.avatar.startsWith("/")
-                        ? venue.avatar
-                        : `/${venue.avatar}`
-                      : undefined
-                  }
-                  alt={venue.name}
-                />
-                <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
-                  {venue.name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative shrink-0">
+                <Avatar className="lg:h-48 lg:w-72 w-full lg:aspect-auto">
+                  <AvatarImage
+                    src={
+                      venue.avatar
+                        ? venue.avatar.startsWith("/")
+                          ? venue.avatar
+                          : `/${venue.avatar}`
+                        : undefined
+                    }
+                    alt={venue.name}
+                  />
+                  <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                    {venue.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {isAdmin ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+                      title="Загрузить фото"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarChange}
+                    />
+                  </div>
+                ) : null}
+              </div>
             </div>
 
             <div className="flex-1">

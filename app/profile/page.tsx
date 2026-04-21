@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
+import { GroupInviteNotification, useAuth } from "@/lib/auth-context";
 import {
   INSTRUMENTS,
   GENRES,
@@ -63,7 +63,15 @@ import {
   Mic2,
   Sliders,
   Camera,
+  MoreHorizontal,
+  Bell,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ROLE_ICONS: Record<
   string,
@@ -79,10 +87,11 @@ const ROLE_ICONS: Record<
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { normalizeImagePath } from "@/lib/utils";
+import { GroupInviteDialog } from "@/components/group-invite-dialog";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { currentUser, updateProfile } = useAuth();
+  const { currentUser, updateProfile, notificationsByUser } = useAuth();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     currentUser?.avatar || null,
@@ -91,7 +100,7 @@ export default function ProfilePage() {
   useEffect(() => {
     setAvatarUrl(currentUser?.avatar || null);
   }, [currentUser?.id, currentUser?.avatar]);
-
+  const { allUsers } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = useCallback(
@@ -112,7 +121,11 @@ export default function ProfilePage() {
     },
     [updateProfile],
   );
-
+  const myInvites = currentUser
+    ? ((notificationsByUser[currentUser.id] || []).filter(
+        (n) => n.type === "group_invite",
+      ) as GroupInviteNotification[])
+    : [];
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -127,7 +140,8 @@ export default function ProfilePage() {
   const [editTelegram, setEditTelegram] = useState("");
   const [editYoutube, setEditYoutube] = useState("");
   const [editSoundcloud, setEditSoundcloud] = useState("");
-
+  const [selectedInvite, setSelectedInvite] =
+    useState<GroupInviteNotification | null>(null);
   const openEdit = useCallback(() => {
     if (!currentUser) return;
     setEditName(currentUser.name);
@@ -240,6 +254,17 @@ export default function ProfilePage() {
   const getTagCategoryColor = (category: string) => {
     const cat = AI_TAG_CATEGORIES.find((c) => c.id === category);
     return cat?.color || "#6C757D";
+  };
+
+  const formatTimeAgo = (timestamp: string) => {
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const days = Math.floor(diff / 864e5);
+    const hours = Math.floor(diff / 36e5);
+    const minutes = Math.floor(diff / 6e4);
+    if (days > 0) return `${days} дн. назад`;
+    if (hours > 0) return `${hours} ч. назад`;
+    if (minutes > 0) return `${minutes} мин. назад`;
+    return "Только что";
   };
 
   return (
@@ -642,8 +667,11 @@ export default function ProfilePage() {
             <Newspaper className="h-4 w-4" />
             Посты ({userPosts.length})
           </TabsTrigger>
+          <TabsTrigger value="invites" className="gap-2">
+            <Bell className="h-4 w-4" />
+            Приглашения ({myInvites.length})
+          </TabsTrigger>
         </TabsList>
-
         <TabsContent value="groups">
           {userGroups.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -701,12 +729,54 @@ export default function ProfilePage() {
             </Card>
           )}
         </TabsContent>
-
         <TabsContent value="posts">
           {userPosts.length > 0 ? (
             <div className="space-y-4">
               {userPosts.map((post) => (
                 <Card key={post.id}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={
+                              allUsers.find((u) => u.id === currentUser.id)
+                                ?.avatar ?? undefined
+                            }
+                            alt={currentUser.name}
+                          />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                            {getInitials(currentUser.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            {formatTimeAgo(post.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>Сохранить</DropdownMenuItem>
+                          <DropdownMenuItem>
+                            Скопировать ссылку
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">
+                            Пожаловаться
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
                   <CardContent className="py-4">
                     <p className="text-foreground mb-2">{post.content}</p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -734,8 +804,37 @@ export default function ProfilePage() {
             </Card>
           )}
         </TabsContent>
+        <TabsContent value="invites">
+          {myInvites.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {myInvites.map((invite) => (
+                <Card
+                  key={invite.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow border-muted"
+                  onClick={() => setSelectedInvite(invite)}
+                >
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold">{invite.groupName}</h4>
+                      <p className="text-xs text-muted-foreground">
+                        {invite.position} • {invite.fromUserName}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="shrink-0">
+                      Ожидает
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <Bell className="h-10 w-10 mx-auto mb-3 opacity-30" />
+              <p>Нет активных приглашений</p>
+            </div>
+          )}
+        </TabsContent>{" "}
       </Tabs>
-
       {/* Edit Profile Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[580px] max-h-[90vh] overflow-y-auto">
@@ -964,6 +1063,14 @@ export default function ProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {selectedInvite && (
+        <GroupInviteDialog
+          open={!!selectedInvite}
+          onOpenChange={(open) => !open && setSelectedInvite(null)}
+          notification={selectedInvite}
+        />
+      )}
     </div>
   );
 }
