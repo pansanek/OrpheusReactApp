@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { BookingDialog } from "@/components/booking-dialog";
-import type { Venue } from "@/lib/mock-data";
+
 import {
   MapPin,
   Star,
@@ -36,6 +36,7 @@ import {
 import { VenuesMap } from "@/components/venues/VenuesMap";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { normalizeImagePath } from "@/lib/utils";
+import { Venue } from "@/lib/types";
 const venueTypes = ["Все", "студия", "репетиционная база", "концертный зал"];
 type ViewMode = "list" | "map";
 

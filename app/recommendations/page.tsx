@@ -1,20 +1,26 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
-import { getRecommendations } from '@/lib/mock-data';
-import { MusicianCard } from '@/components/musician-card';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Users } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { getRecommendations } from "@/lib/mock-data";
+import { MusicianCard } from "@/components/musician-card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Sparkles, Users } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function RecommendationsPage() {
   const router = useRouter();
   const { currentUser } = useAuth();
 
   if (!currentUser) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 
@@ -27,7 +33,9 @@ export default function RecommendationsPage() {
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Рекомендации для вас</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            Рекомендации для вас
+          </h1>
         </div>
         <p className="text-muted-foreground">
           Персонализированные предложения на основе ваших интересов и тегов ИИ
@@ -46,7 +54,9 @@ export default function RecommendationsPage() {
                 1
               </div>
               <div>
-                <p className="font-medium text-foreground">Жанры и инструменты</p>
+                <p className="font-medium text-foreground">
+                  Жанры и инструменты
+                </p>
                 <p className="text-sm text-muted-foreground">
                   Ищем музыкантов с похожими музыкальными предпочтениями
                 </p>
@@ -85,9 +95,12 @@ export default function RecommendationsPage() {
             <div className="flex items-start gap-4">
               <Sparkles className="h-5 w-5 text-warning shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-foreground">Добавьте теги для лучших рекомендаций</p>
+                <p className="font-medium text-foreground">
+                  Добавьте теги для лучших рекомендаций
+                </p>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Расскажите системе о своих интересах, чтобы получать более точные предложения
+                  Расскажите системе о своих интересах, чтобы получать более
+                  точные предложения
                 </p>
                 <Button asChild size="sm">
                   <Link href="/ai-tags">Добавить теги</Link>
@@ -102,11 +115,7 @@ export default function RecommendationsPage() {
       {recommendations.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {recommendations.map(({ musician, score }) => (
-            <MusicianCard 
-              key={musician.id} 
-              musician={musician} 
-              score={score}
-            />
+            <MusicianCard key={musician.id} musician={musician} score={score} />
           ))}
         </div>
       ) : (

@@ -1,14 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import {
-  getMusicianById,
-  musicians,
-  VENUE_ADMINS,
-  venues,
-  type Venue,
-} from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { getMusicianById, VENUE_ADMINS, type Venue } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -40,7 +34,7 @@ export function BookingDialog({
   onOpenChange,
   venue,
 }: BookingDialogProps) {
-  const { currentUser, sendBookingRequest } = useAuth();
+  const { currentUser, sendBookingRequest, allUsers, venuesState } = useAuth();
   const dispatch = useAppDispatch();
   const [bookingDate, setBookingDate] = useState("");
   const [bookingTime, setBookingTime] = useState("");

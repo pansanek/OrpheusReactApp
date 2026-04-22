@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
-import { getGroupsByMusicianId } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -18,6 +17,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getGroupsByMusicianId } from "@/lib/storage";
 
 interface SidebarProps {
   open?: boolean;
@@ -36,9 +36,11 @@ const navItems = [
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { currentUser } = useAuth();
+  const { currentUser, groupsState } = useAuth();
 
-  const userGroups = currentUser ? getGroupsByMusicianId(currentUser.id) : [];
+  const userGroups = currentUser
+    ? getGroupsByMusicianId(currentUser.id, groupsState)
+    : [];
 
   const getInitials = (name: string) => {
     return name

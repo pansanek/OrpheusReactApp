@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth, type AppNotification } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +18,8 @@ import {
   CheckCheck,
   UserPlus,
 } from "lucide-react";
+import { AppNotification } from "@/lib/types/notification.types";
+import { useAuth } from "@/contexts/auth-context";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();

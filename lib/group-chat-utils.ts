@@ -7,8 +7,8 @@ import {
 import { ChatType, Message } from "@/store/types/chat.types";
 import { normalizeImagePath } from "@/lib/utils";
 import { getInitials } from "@/utils/chatUtils";
-import { useAuth } from "./auth-context";
-import { Group } from "./mock-data";
+import { useAuth } from "../contexts/auth-context";
+import { Group } from "./types";
 
 /**
  * Создаёт групповой чат при создании группы

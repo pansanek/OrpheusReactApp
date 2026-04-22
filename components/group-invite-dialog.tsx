@@ -13,8 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, MapPin, Music, Users } from "lucide-react";
-import { GroupInviteNotification, useAuth } from "@/lib/auth-context";
 import { normalizeImagePath } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { GroupInviteNotification } from "@/lib/types/notification.types";
 
 interface GroupInviteDialogProps {
   open: boolean;

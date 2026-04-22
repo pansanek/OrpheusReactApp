@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { INSTRUMENTS, musicians } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { INSTRUMENTS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +45,7 @@ export function RequestToJoinDialog({
   groupName,
   groupCreatorId,
 }: RequestToJoinDialogProps) {
-  const { currentUser, sendJoinRequest } = useAuth();
+  const { currentUser, sendJoinRequest, allUsers } = useAuth();
   const dispatch = useAppDispatch();
 
   const [position, setPosition] = useState("");
@@ -78,7 +78,7 @@ export function RequestToJoinDialog({
     });
 
     // Создаём чат с создателем группы и отправляем сообщение
-    const creator = musicians.find((u) => u.id === groupCreatorId);
+    const creator = allUsers.find((u) => u.id === groupCreatorId);
     if (creator && message?.trim()) {
       dispatch(
         createDirectChat({

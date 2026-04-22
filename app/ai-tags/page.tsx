@@ -1,59 +1,65 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth-context';
-import { AI_TAG_CATEGORIES } from '@/lib/mock-data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { AI_TAG_CATEGORIES } from "@/lib/mock-data";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Sparkles, Plus, X, Info, Lightbulb } from 'lucide-react';
+} from "@/components/ui/select";
+import { Sparkles, Plus, X, Info, Lightbulb } from "lucide-react";
 
 const tagSuggestions = [
-  { text: 'Ищу группу', category: 'collaboration' },
-  { text: 'Джем-сессии', category: 'activity' },
-  { text: 'Готов к концертам', category: 'activity' },
-  { text: 'Студийная работа', category: 'skill' },
-  { text: 'Онлайн-коллаборации', category: 'collaboration' },
-  { text: 'Преподавание', category: 'skill' },
-  { text: 'Ищу вокалиста', category: 'collaboration' },
-  { text: 'Ищу барабанщика', category: 'collaboration' },
-  { text: 'Центр города', category: 'location' },
-  { text: 'Записываю каверы', category: 'goal' },
-  { text: 'Пишу авторский материал', category: 'goal' },
-  { text: 'Готов к гастролям', category: 'activity' },
+  { text: "Ищу группу", category: "collaboration" },
+  { text: "Джем-сессии", category: "activity" },
+  { text: "Готов к концертам", category: "activity" },
+  { text: "Студийная работа", category: "skill" },
+  { text: "Онлайн-коллаборации", category: "collaboration" },
+  { text: "Преподавание", category: "skill" },
+  { text: "Ищу вокалиста", category: "collaboration" },
+  { text: "Ищу барабанщика", category: "collaboration" },
+  { text: "Центр города", category: "location" },
+  { text: "Записываю каверы", category: "goal" },
+  { text: "Пишу авторский материал", category: "goal" },
+  { text: "Готов к гастролям", category: "activity" },
 ];
 
 export default function AITagsPage() {
   const router = useRouter();
   const { currentUser, addAITag, removeAITag } = useAuth();
-  const [newTagText, setNewTagText] = useState('');
-  const [newTagCategory, setNewTagCategory] = useState('');
+  const [newTagText, setNewTagText] = useState("");
+  const [newTagCategory, setNewTagCategory] = useState("");
 
   if (!currentUser) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 
   const handleAddTag = () => {
     if (newTagText.trim() && newTagCategory) {
       addAITag({ text: newTagText.trim(), category: newTagCategory });
-      setNewTagText('');
-      setNewTagCategory('');
+      setNewTagText("");
+      setNewTagCategory("");
     }
   };
 
-  const handleAddSuggestion = (suggestion: typeof tagSuggestions[0]) => {
+  const handleAddSuggestion = (suggestion: (typeof tagSuggestions)[0]) => {
     const exists = currentUser.aiTags.some(
-      t => t.text.toLowerCase() === suggestion.text.toLowerCase()
+      (t) => t.text.toLowerCase() === suggestion.text.toLowerCase(),
     );
     if (!exists) {
       addAITag(suggestion);
@@ -61,12 +67,12 @@ export default function AITagsPage() {
   };
 
   const getCategoryColor = (categoryId: string) => {
-    const category = AI_TAG_CATEGORIES.find(c => c.id === categoryId);
-    return category?.color || '#6C757D';
+    const category = AI_TAG_CATEGORIES.find((c) => c.id === categoryId);
+    return category?.color || "#6C757D";
   };
 
   const getCategoryName = (categoryId: string) => {
-    const category = AI_TAG_CATEGORIES.find(c => c.id === categoryId);
+    const category = AI_TAG_CATEGORIES.find((c) => c.id === categoryId);
     return category?.name || categoryId;
   };
 
@@ -79,7 +85,8 @@ export default function AITagsPage() {
         <h1 className="text-3xl font-bold text-foreground">Теги для ИИ</h1>
       </div>
       <p className="text-muted-foreground mb-8">
-        Эти теги помогают системе подбирать вам подходящих партнёров и показывать релевантные рекомендации
+        Эти теги помогают системе подбирать вам подходящих партнёров и
+        показывать релевантные рекомендации
       </p>
 
       {/* Info Card */}
@@ -88,10 +95,13 @@ export default function AITagsPage() {
           <div className="flex gap-3">
             <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-foreground mb-1">Как работают теги</p>
+              <p className="font-medium text-foreground mb-1">
+                Как работают теги
+              </p>
               <p className="text-sm text-muted-foreground">
-                Добавляйте теги, описывающие ваши интересы и цели. Система будет использовать их 
-                для поиска музыкантов с похожими интересами и показа персонализированных рекомендаций.
+                Добавляйте теги, описывающие ваши интересы и цели. Система будет
+                использовать их для поиска музыкантов с похожими интересами и
+                показа персонализированных рекомендаций.
               </p>
             </div>
           </div>
@@ -103,22 +113,22 @@ export default function AITagsPage() {
         <CardHeader>
           <CardTitle>Ваши теги</CardTitle>
           <CardDescription>
-            {currentUser.aiTags.length > 0 
-              ? `У вас ${currentUser.aiTags.length} тегов` 
-              : 'У вас пока нет тегов'}
+            {currentUser.aiTags.length > 0
+              ? `У вас ${currentUser.aiTags.length} тегов`
+              : "У вас пока нет тегов"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {currentUser.aiTags.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {currentUser.aiTags.map(tag => (
+              {currentUser.aiTags.map((tag) => (
                 <Badge
                   key={tag.id}
                   variant="outline"
                   className="py-1.5 px-3 rounded-full text-sm"
-                  style={{ 
+                  style={{
                     borderColor: getCategoryColor(tag.category),
-                    color: getCategoryColor(tag.category)
+                    color: getCategoryColor(tag.category),
                   }}
                 >
                   {tag.text}
@@ -163,11 +173,11 @@ export default function AITagsPage() {
                 <SelectValue placeholder="Категория" />
               </SelectTrigger>
               <SelectContent>
-                {AI_TAG_CATEGORIES.map(cat => (
+                {AI_TAG_CATEGORIES.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     <div className="flex items-center gap-2">
-                      <span 
-                        className="w-2 h-2 rounded-full" 
+                      <span
+                        className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: cat.color }}
                       />
                       {cat.name}
@@ -176,7 +186,7 @@ export default function AITagsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button 
+            <Button
               onClick={handleAddTag}
               disabled={!newTagText.trim() || !newTagCategory}
             >
@@ -202,7 +212,7 @@ export default function AITagsPage() {
           <div className="flex flex-wrap gap-2">
             {tagSuggestions.map((suggestion, index) => {
               const isAdded = currentUser.aiTags.some(
-                t => t.text.toLowerCase() === suggestion.text.toLowerCase()
+                (t) => t.text.toLowerCase() === suggestion.text.toLowerCase(),
               );
               return (
                 <button
@@ -211,14 +221,17 @@ export default function AITagsPage() {
                   disabled={isAdded}
                   className={`
                     py-1.5 px-3 rounded-full text-sm border transition-all
-                    ${isAdded 
-                      ? 'opacity-50 cursor-not-allowed bg-muted' 
-                      : 'hover:scale-105 hover:shadow-sm cursor-pointer'
+                    ${
+                      isAdded
+                        ? "opacity-50 cursor-not-allowed bg-muted"
+                        : "hover:scale-105 hover:shadow-sm cursor-pointer"
                     }
                   `}
-                  style={{ 
+                  style={{
                     borderColor: getCategoryColor(suggestion.category),
-                    color: isAdded ? undefined : getCategoryColor(suggestion.category)
+                    color: isAdded
+                      ? undefined
+                      : getCategoryColor(suggestion.category),
                   }}
                 >
                   {suggestion.text}
@@ -232,12 +245,14 @@ export default function AITagsPage() {
 
       {/* Categories Legend */}
       <div className="mt-6 p-4 bg-muted rounded-lg">
-        <p className="text-sm font-medium text-foreground mb-3">Категории тегов:</p>
+        <p className="text-sm font-medium text-foreground mb-3">
+          Категории тегов:
+        </p>
         <div className="flex flex-wrap gap-4">
-          {AI_TAG_CATEGORIES.map(cat => (
+          {AI_TAG_CATEGORIES.map((cat) => (
             <div key={cat.id} className="flex items-center gap-2 text-sm">
-              <span 
-                className="w-3 h-3 rounded-full" 
+              <span
+                className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: cat.color }}
               />
               <span className="text-muted-foreground">{cat.name}</span>

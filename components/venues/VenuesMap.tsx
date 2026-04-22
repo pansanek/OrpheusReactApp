@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Venue } from '@/lib/mock-data';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { MapPin, Star, Phone, Clock, Users, X } from 'lucide-react';
-import Link from 'next/link';
+import React, { useEffect, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Star, Phone, Clock, Users, X } from "lucide-react";
+import Link from "next/link";
+import { Venue } from "@/lib/types";
 
 interface VenuesMapProps {
   venues: Venue[];
@@ -21,14 +21,14 @@ declare global {
 
 const getMarkerColor = (type: string): string => {
   switch (type) {
-    case 'студия':
-      return '#3b82f6'; // blue
-    case 'концертный зал':
-      return '#8b5cf6'; // purple
-    case 'репетиционная база':
-      return '#10b981'; // green
+    case "студия":
+      return "#3b82f6"; // blue
+    case "концертный зал":
+      return "#8b5cf6"; // purple
+    case "репетиционная база":
+      return "#10b981"; // green
     default:
-      return '#6b7280'; // gray
+      return "#6b7280"; // gray
   }
 };
 
@@ -40,9 +40,13 @@ export function VenuesMap({ venues }: VenuesMapProps) {
 
   useEffect(() => {
     // Загружаем API Яндекс Карт
-    if (!window.ymaps && !document.querySelector('script[src*="api-maps.yandex.ru"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU';
+    if (
+      !window.ymaps &&
+      !document.querySelector('script[src*="api-maps.yandex.ru"]')
+    ) {
+      const script = document.createElement("script");
+      script.src =
+        "https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU";
       script.async = true;
       script.onload = () => {
         window.ymaps?.ready(() => {
@@ -64,7 +68,7 @@ export function VenuesMap({ venues }: VenuesMapProps) {
     const map = new window.ymaps.Map(mapRef.current, {
       center: [55.751244, 37.618423], // Центр Москвы
       zoom: 11,
-      controls: ['zoomControl', 'fullscreenControl', 'geolocationControl'],
+      controls: ["zoomControl", "fullscreenControl", "geolocationControl"],
     });
 
     mapInstanceRef.current = map;
@@ -81,19 +85,19 @@ export function VenuesMap({ venues }: VenuesMapProps) {
               <p style="margin: 0 0 8px 0; font-size: 12px; color: #999;">${venue.address}</p>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <span style="font-size: 14px;">⭐ ${venue.rating}</span>
-                <span style="font-size: 14px; font-weight: 600;">${venue.pricePerHour.toLocaleString('ru-RU')} руб/час</span>
+                <span style="font-size: 14px; font-weight: 600;">${venue.pricePerHour.toLocaleString("ru-RU")} руб/час</span>
               </div>
             </div>
           `,
         },
         {
-          preset: 'islands#circleDotIcon',
+          preset: "islands#circleDotIcon",
           iconColor: getMarkerColor(venue.type),
-        }
+        },
       );
 
       // Обработчик клика на маркер
-      placemark.events.add('click', () => {
+      placemark.events.add("click", () => {
         setSelectedVenue(venue);
       });
 
@@ -110,8 +114,11 @@ export function VenuesMap({ venues }: VenuesMapProps) {
 
   return (
     <div className="relative w-full h-[600px]">
-      <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden border border-border" />
-      
+      <div
+        ref={mapRef}
+        className="w-full h-full rounded-lg overflow-hidden border border-border"
+      />
+
       {!isMapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-lg">
           <div className="text-center">
@@ -127,10 +134,10 @@ export function VenuesMap({ venues }: VenuesMapProps) {
           <CardContent className="p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-1">{selectedVenue.name}</h3>
-                <Badge className="text-xs">
-                  {selectedVenue.type}
-                </Badge>
+                <h3 className="font-semibold text-lg mb-1">
+                  {selectedVenue.name}
+                </h3>
+                <Badge className="text-xs">{selectedVenue.type}</Badge>
               </div>
               <Button
                 variant="ghost"
@@ -145,27 +152,35 @@ export function VenuesMap({ venues }: VenuesMapProps) {
             <div className="space-y-2 text-sm mb-4">
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                <span className="text-muted-foreground">{selectedVenue.address}</span>
+                <span className="text-muted-foreground">
+                  {selectedVenue.address}
+                </span>
               </div>
-              
+
               {selectedVenue.phone && (
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{selectedVenue.phone}</span>
+                  <span className="text-muted-foreground">
+                    {selectedVenue.phone}
+                  </span>
                 </div>
               )}
-              
+
               {selectedVenue.workingHours && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{selectedVenue.workingHours}</span>
+                  <span className="text-muted-foreground">
+                    {selectedVenue.workingHours}
+                  </span>
                 </div>
               )}
-              
+
               {selectedVenue.capacity && (
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">До {selectedVenue.capacity} чел.</span>
+                  <span className="text-muted-foreground">
+                    До {selectedVenue.capacity} чел.
+                  </span>
                 </div>
               )}
             </div>
@@ -180,7 +195,7 @@ export function VenuesMap({ venues }: VenuesMapProps) {
                 <span className="font-medium">{selectedVenue.rating}</span>
               </div>
               <span className="font-semibold text-lg">
-                {selectedVenue.pricePerHour.toLocaleString('ru-RU')} руб/час
+                {selectedVenue.pricePerHour.toLocaleString("ru-RU")} руб/час
               </span>
             </div>
 
@@ -203,11 +218,15 @@ export function VenuesMap({ venues }: VenuesMapProps) {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#10b981]" />
-              <span className="text-xs text-muted-foreground">Репетиционная база</span>
+              <span className="text-xs text-muted-foreground">
+                Репетиционная база
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
-              <span className="text-xs text-muted-foreground">Концертный зал</span>
+              <span className="text-xs text-muted-foreground">
+                Концертный зал
+              </span>
             </div>
           </div>
         </CardContent>

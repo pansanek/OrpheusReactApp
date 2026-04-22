@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import { useCurrentChatMessages, useCurrentChat } from "@/store/hooks";
 import { ChatType } from "@/store/types/chat.types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Music, Search, Bell, Menu, User, LogOut, Settings } from 'lucide-react';
-import { useState } from 'react';
-import { MobileNav } from './MobileNav';
+} from "@/components/ui/dropdown-menu";
+import {
+  Music,
+  Search,
+  Bell,
+  Menu,
+  User,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { useState } from "react";
+import { MobileNav } from "./MobileNav";
+import { useAuth } from "@/contexts/auth-context";
 
 export function Header() {
   const { currentUser, logout } = useAuth();
@@ -53,19 +62,24 @@ export function Header() {
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 px-2">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 px-2"
+                  >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
                       {currentUser.name.charAt(0)}
                     </div>
                     <span className="hidden max-w-[100px] truncate text-sm font-medium sm:block">
-                      {currentUser.name.split(' ')[0]}
+                      {currentUser.name.split(" ")[0]}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
                     <p className="text-sm font-medium">{currentUser.name}</p>
-                    <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {currentUser.email}
+                    </p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -81,7 +95,10 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} className="text-destructive">
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="text-destructive"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Выйти
                   </DropdownMenuItem>
@@ -107,7 +124,10 @@ export function Header() {
       </div>
 
       {/* Mobile Navigation */}
-      <MobileNav open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileNav
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
     </header>
   );
 }

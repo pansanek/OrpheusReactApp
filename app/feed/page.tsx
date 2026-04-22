@@ -2,12 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-import {
-  posts as initialPosts,
-  getMusicianById,
-  type Post,
-} from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { getMusicianById, type Post } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -40,13 +36,13 @@ type PostWithMedia = Post & {
 };
 
 export default function FeedPage() {
-  const { currentUser } = useAuth();
-  const [feedPosts, setFeedPosts] = useState<PostWithMedia[]>(initialPosts);
+  const { currentUser, allUsers, posts, createPost, addComment, toggleLike } =
+    useAuth();
+  const [feedPosts, setFeedPosts] = useState<PostWithMedia[]>(posts);
   const [newPostContent, setNewPostContent] = useState("");
   const [attachedMedia, setAttachedMedia] = useState<
     { type: "image" | "video" | "audio"; url: string; name: string }[]
   >([]);
-  const { allUsers } = useAuth();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -102,6 +98,7 @@ export default function FeedPage() {
       media: attachedMedia.length > 0 ? [...attachedMedia] : undefined,
     };
     setFeedPosts((prev) => [newPost, ...prev]);
+    createPost(newPostContent.trim(), null, attachedMedia[0]?.url);
     setNewPostContent("");
     setAttachedMedia([]);
   };
@@ -109,10 +106,8 @@ export default function FeedPage() {
   // Per-post component
   const PostCard = ({ post }: { post: PostWithMedia }) => {
     const author = getMusicianById(post.authorId);
-    const [isLiked, setIsLiked] = useState(
-      currentUser ? post.likes.includes(currentUser.id) : false,
-    );
-    const [likesCount, setLikesCount] = useState(post.likes.length);
+    const isLiked = currentUser ? post.likes.includes(currentUser.id) : false;
+    const likesCount = post.likes.length;
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState(post.comments);
     const [commentText, setCommentText] = useState("");
@@ -121,8 +116,7 @@ export default function FeedPage() {
 
     const handleLike = () => {
       if (!currentUser) return;
-      setIsLiked((v) => !v);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      toggleLike(post.id); //Автосохранение в localStorage
     };
 
     const handleComment = () => {
@@ -133,6 +127,7 @@ export default function FeedPage() {
         text: commentText.trim(),
         timestamp: new Date().toISOString(),
       };
+      addComment(post.id, commentText.trim());
       setComments((prev) => [...prev, newComment]);
       setCommentText("");
     };
@@ -497,7 +492,7 @@ export default function FeedPage() {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {feedPosts.map((post) => (
+        {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>

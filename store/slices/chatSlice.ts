@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Chat, ChatState, ChatType, Message } from "../types/chat.types";
 import { musicians, venues } from "@/lib/mock-data";
 import { RootState } from "../store";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 
 const getInitials = (name: string) => {
   return name

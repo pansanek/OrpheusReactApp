@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
 import {
   Home,
   Newspaper,
@@ -15,17 +15,18 @@ import {
   Sparkles,
   X,
   LogOut,
-} from 'lucide-react';
-import { useEffect } from 'react';
+} from "lucide-react";
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/auth-context";
 
 const navItems = [
-  { href: '/', label: 'Главная', icon: Home },
-  { href: '/feed', label: 'Лента', icon: Newspaper },
-  { href: '/search', label: 'Поиск', icon: Search },
-  { href: '/groups', label: 'Группы', icon: Users },
-  { href: '/venues', label: 'Площадки', icon: Building2 },
-  { href: '/ai-tags', label: 'ИИ-теги', icon: Tags },
-  { href: '/recommendations', label: 'Рекомендации', icon: Sparkles },
+  { href: "/", label: "Главная", icon: Home },
+  { href: "/feed", label: "Лента", icon: Newspaper },
+  { href: "/search", label: "Поиск", icon: Search },
+  { href: "/groups", label: "Группы", icon: Users },
+  { href: "/venues", label: "Площадки", icon: Building2 },
+  { href: "/ai-tags", label: "ИИ-теги", icon: Tags },
+  { href: "/recommendations", label: "Рекомендации", icon: Sparkles },
 ];
 
 interface MobileNavProps {
@@ -45,12 +46,12 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
   // Prevent body scroll when open
   useEffect(() => {
     if (open) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [open]);
 
@@ -59,10 +60,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
   return (
     <div className="fixed inset-0 z-50 md:hidden">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Drawer */}
       <div className="absolute right-0 top-0 h-full w-72 bg-card shadow-xl">
@@ -84,7 +82,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                 <div>
                   <p className="font-medium">{currentUser.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {currentUser.instruments.join(', ')}
+                    {currentUser.instruments.join(", ")}
                   </p>
                 </div>
               </div>
@@ -102,10 +100,10 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-foreground hover:bg-muted'
+                      ? "bg-primary text-primary-foreground"
+                      : "text-foreground hover:bg-muted",
                   )}
                 >
                   <Icon className="h-5 w-5" />

@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { useAppDispatch } from "@/store/hooks";
-import { musicians, VENUE_ADMINS, venues } from "@/lib/mock-data";
 import {
   createDirectChat,
   createGroupChat,
   createVenueChat,
 } from "@/store/slices/chatSlice";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
+import { musicians, venues } from "@/lib/mock-data";
+import { VENUE_ADMINS } from "@/lib/types";
 
 interface CreateChatModalProps {
   isOpen: boolean;

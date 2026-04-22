@@ -2,13 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  Venue,
-  VENUE_ADMINS,
-  VENUE_TYPES,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -62,6 +56,8 @@ import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookingDialog } from "@/components/booking-dialog";
+import { getMusicianById } from "@/lib/storage";
+import { Venue, VENUE_ADMINS } from "@/lib/types";
 export default function VenuePage() {
   const params = useParams();
   const venueId = Number(params?.id);

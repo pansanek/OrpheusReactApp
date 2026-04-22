@@ -2,14 +2,14 @@
 import { normalizeImagePath } from "@/lib/utils";
 import { useState } from "react";
 import Link from "next/link";
-import type { Musician } from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InviteToGroupDialog } from "@/components/invite-to-group-dialog";
 import { Star, MapPin, MessageCircle, UserPlus } from "lucide-react";
+import { Musician } from "@/lib/types";
 interface MusicianCardProps {
   musician: Musician;
   showActions?: boolean;

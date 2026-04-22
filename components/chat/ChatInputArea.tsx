@@ -5,7 +5,7 @@ import { useAppDispatch, useCurrentChat } from "@/store/hooks";
 import { addMessage } from "@/store/slices/chatSlice";
 import { Message } from "@/store/types/chat.types";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 
 export const ChatInputArea: React.FC = () => {
   const dispatch = useAppDispatch();

@@ -7,80 +7,39 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import {
-  musicians as initialMusicians,
-  groups,
-  venues,
-  type Musician,
-  type AITag,
-  type Group,
-  type Venue,
-  musicians,
-} from "./mock-data";
-import {
-  getStoredMusicians,
-  saveMusicians,
-  getStoredGroups,
-  saveGroups,
-  getStoredVenues,
-  saveVenues,
-} from "@/lib/mock-storage";
+import type { Musician, Group, Venue, Post, AITag, Comment } from "@/lib/types";
 import { toast } from "@/components/ui/use-toast";
-import { CreateGroupFormValues } from "./validations/group";
+import { CreateGroupFormValues } from "../lib/validations/group";
 import { store } from "@/store/store";
-
-import type { Message } from "@/store/types/chat.types";
-import { addMemberToGroupChat, initGroupChat } from "./group-chat-utils";
-export type NotificationType = "group_invite" | "booking_request" | "message";
-
-export interface GroupInviteNotification {
-  id: number;
-  type: "group_invite";
-  fromUserId: number;
-  fromUserName: string;
-  groupId: number;
-  groupName: string;
-  position: string;
-  message: string;
-  createdAt: string;
-  read: boolean;
-}
-
-export interface BookingRequestNotification {
-  id: number;
-  type: "booking_request";
-  fromUserId: number;
-  fromUserName: string;
-  venueName: string;
-  venueId: number;
-  date: string;
-  time: string;
-  hours: number;
-  totalPrice: number;
-  message: string;
-  createdAt: string;
-  read: boolean;
-}
-
-export interface GroupJoinRequestNotification {
-  id: number;
-  type: "group_join_request";
-  fromUserId: number;
-  fromUserName: string;
-  fromUserAvatar?: string;
-  groupId: number;
-  groupName: string;
-  position: string;
-  message: string;
-  createdAt: string;
-  read: boolean;
-}
-
-export type AppNotification =
-  | GroupInviteNotification
-  | BookingRequestNotification
-  | GroupJoinRequestNotification;
-// --- Auth context ---
+import {
+  getMusicians,
+  saveMusicians,
+  getGroups,
+  saveGroups,
+  getVenues,
+  saveVenues,
+  getPosts,
+  savePosts,
+  getChats,
+  saveChats,
+  getMessages,
+  saveMessages,
+  getNotifications,
+  saveNotifications,
+  getJoinRequests,
+  saveJoinRequests,
+  getSentInvites,
+  saveSentInvites,
+} from "@/lib/storage";
+import type { Chat, Message } from "@/store/types/chat.types";
+import { addMemberToGroupChat, initGroupChat } from "../lib/group-chat-utils";
+import {
+  AppNotification,
+  BookingRequestNotification,
+  GroupInviteNotification,
+  GroupJoinRequestNotification,
+} from "../lib/types/notification.types";
+import { JoinRequest } from "../lib/types/request.types";
 
 interface AuthContextType {
   currentUser: Musician | null;
@@ -89,6 +48,9 @@ interface AuthContextType {
   groupsState: Group[];
   venuesState: Venue[];
   allUsers: Musician[];
+  posts: Post[];
+  joinRequests: Record<number, JoinRequest[]>;
+
   login: (userId: number) => void;
   logout: () => void;
   register: (
@@ -118,11 +80,6 @@ interface AuthContextType {
   }) => void;
   markAllRead: () => void;
   markRead: (notificationId: number) => void;
-  notificationsByUser: Record<number, AppNotification[]>;
-  joinRequests: Record<
-    number,
-    { userId: number; position: string; message: string; createdAt: string }[]
-  >;
   sendJoinRequest: (params: {
     toUserId: number;
     groupId: number;
@@ -134,25 +91,30 @@ interface AuthContextType {
   createGroup: (data: CreateGroupFormValues) => number;
   acceptGroupInvite: (notificationId: number) => void;
   declineGroupInvite: (notificationId: number) => void;
+  createPost: (content: string, groupId: number | null, image?: string) => void;
+  addComment: (postId: number, text: string) => void;
+  toggleLike: (postId: number) => void;
+  addNotificationForUser: (
+    userId: number,
+    notification: AppNotification,
+  ) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<Musician | null>(null);
-  const [allUsers, setAllUsers] = useState<Musician[]>(() =>
-    getStoredMusicians(),
+  const [allUsers, setAllUsers] = useState<Musician[]>(() => getMusicians());
+  const [groupsState, setGroupsState] = useState<Group[]>(() => getGroups());
+  const [venuesState, setVenuesState] = useState<Venue[]>(() => getVenues());
+  const [posts, setPosts] = useState<Post[]>(() => getPosts());
+  const [notificationsByUser, setNotificationsByUser] =
+    useState(getNotifications);
+  const [joinRequests, setJoinRequests] = useState<
+    Record<number, JoinRequest[]>
+  >(
+    () => getJoinRequests(), // 👈 добавили () => для ленивой инициализации
   );
-  const [groupsState, setGroupsState] = useState<Group[]>(() =>
-    getStoredGroups(),
-  );
-  const [venuesState, setVenuesState] = useState<Venue[]>(() =>
-    getStoredVenues(),
-  );
-
-  const [notificationsByUser, setNotificationsByUser] = useState<
-    Record<number, AppNotification[]>
-  >({});
 
   const notifications: AppNotification[] = currentUser
     ? (notificationsByUser[currentUser.id] ?? [])
@@ -161,10 +123,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const addNotificationForUser = useCallback(
     (userId: number, notification: AppNotification) => {
-      setNotificationsByUser((prev) => ({
-        ...prev,
-        [userId]: [notification, ...(prev[userId] ?? [])],
-      }));
+      setNotificationsByUser((prev) => {
+        const updated = {
+          ...prev,
+          [userId]: [notification, ...(prev[userId] ?? [])],
+        };
+        saveNotifications(updated); // Сохраняем уведомления
+        return updated;
+      });
     },
     [],
   );
@@ -189,12 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setAllUsers((prev) => {
         const updated = [...prev, newUser];
-        // 👇 Сохраняем нового пользователя
-        try {
-          localStorage.setItem("umpsm_users", JSON.stringify(updated));
-        } catch (e) {
-          console.error("Failed to save to localStorage", e);
-        }
+        saveMusicians(updated); // Централизованное сохранение
         return updated;
       });
 
@@ -214,17 +175,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setAllUsers((users) => {
         const updatedUsers = users.map((u) => (u.id === prev.id ? updated : u));
-
-        try {
-          localStorage.setItem("umpsm_users", JSON.stringify(updatedUsers));
-        } catch (e) {
-          console.error("Failed to save to localStorage", e);
-        }
-
+        //Используем централизованную функцию сохранения
+        saveMusicians(updatedUsers);
         return updatedUsers;
       });
 
       return updated;
+    });
+  }, []);
+
+  const saveUserNotifications = useCallback(
+    (userId: number, updated: AppNotification[]) => {
+      setNotificationsByUser((prev) => {
+        const next = { ...prev, [userId]: updated };
+        saveNotifications(next);
+        return next;
+      });
+    },
+    [],
+  );
+  const addAITag = useCallback((tag: Omit<AITag, "id">) => {
+    setCurrentUser((prev) => {
+      if (!prev) return null;
+      const newTag = { ...tag, id: Date.now() };
+      const updatedUser = { ...prev, aiTags: [...prev.aiTags, newTag] };
+
+      // Синхронизируем с allUsers и сохраняем
+      setAllUsers((users) => {
+        const updatedUsers = users.map((u) =>
+          u.id === prev.id ? updatedUser : u,
+        );
+        saveMusicians(updatedUsers);
+        return updatedUsers;
+      });
+
+      return updatedUser;
     });
   }, []);
   const createGroup = useCallback(
@@ -257,7 +242,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
 
       initGroupChat(newGroup, store.dispatch, currentUser.id.toString());
-      setGroupsState((prev) => [...prev, newGroup]);
+      setGroupsState((prev) => {
+        const updated = [...prev, newGroup];
+        saveGroups(updated); //Сохраняем новую группу
+        return updated;
+      });
 
       if (invites.length > 0) {
         invites.forEach((invite) => {
@@ -288,29 +277,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const updateGroup = useCallback((groupId: number, data: Partial<Group>) => {
-    setGroupsState((prev) =>
-      prev.map((g) => (g.id === groupId ? { ...g, ...data } : g)),
-    );
+    setGroupsState((prev) => {
+      const updated = prev.map((g) =>
+        g.id === groupId ? { ...g, ...data } : g,
+      );
+      saveGroups(updated);
+      return updated;
+    });
   }, []);
 
   const updateVenue = useCallback((venueId: number, data: Partial<Venue>) => {
-    setVenuesState((prev) =>
-      prev.map((v) => (v.id === venueId ? { ...v, ...data } : v)),
-    );
-  }, []);
-
-  const addAITag = useCallback((tag: Omit<AITag, "id">) => {
-    setCurrentUser((prev) => {
-      if (!prev) return null;
-      const newTag = { ...tag, id: Date.now() };
-      return { ...prev, aiTags: [...prev.aiTags, newTag] };
+    setVenuesState((prev) => {
+      const updated = prev.map((v) =>
+        v.id === venueId ? { ...v, ...data } : v,
+      );
+      saveVenues(updated); //Сохраняем в localStorage
+      return updated;
     });
   }, []);
 
   const removeAITag = useCallback((tagId: number) => {
     setCurrentUser((prev) => {
       if (!prev) return null;
-      return { ...prev, aiTags: prev.aiTags.filter((t) => t.id !== tagId) };
+      const updatedUser = {
+        ...prev,
+        aiTags: prev.aiTags.filter((t) => t.id !== tagId),
+      };
+
+      setAllUsers((users) => {
+        const updatedUsers = users.map((u) =>
+          u.id === prev.id ? updatedUser : u,
+        );
+        saveMusicians(updatedUsers);
+        return updatedUsers;
+      });
+
+      return updatedUser;
     });
   }, []);
 
@@ -352,17 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [currentUser, addNotificationForUser],
   );
-  const [joinRequests, setJoinRequests] = useState<
-    Record<
-      number,
-      {
-        userId: number;
-        position: string;
-        message: string;
-        createdAt: string;
-      }[]
-    >
-  >({});
+
   const sendJoinRequest = useCallback(
     (params: {
       toUserId: number;
@@ -373,18 +365,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!currentUser) return;
 
       // 1. Сохраняем запрос в состояние группы
-      setJoinRequests((prev) => ({
-        ...prev,
-        [params.groupId]: [
-          ...(prev[params.groupId] ?? []),
-          {
-            userId: currentUser.id,
-            position: params.position,
-            message: params.message,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      }));
+      setJoinRequests((prev) => {
+        const updated = {
+          ...prev,
+          [params.groupId]: [
+            ...(prev[params.groupId] ?? []),
+            {
+              userId: currentUser!.id,
+              position: params.position,
+              message: params.message,
+              groupId: params.groupId,
+              status: "pending" as const,
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        };
+        saveJoinRequests(updated); // Сохраняем запросы
+        return updated;
+      });
 
       // 2. Создаём уведомление для создателя группы
       const group = groupsState.find((g) => g.id === params.groupId);
@@ -406,33 +404,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [currentUser, groupsState, addNotificationForUser],
   );
-  const acceptJoinRequest = useCallback((groupId: number, userId: number) => {
-    const user = musicians.find((m) => m.id === userId);
-    // Добавляем пользователя в группу
-    setGroupsState((prev) =>
-      prev.map((g) =>
-        g.id === groupId && !g.members.includes(userId)
-          ? { ...g, members: [...g.members, userId] }
-          : g,
-      ),
-    );
-    if (user) {
-      // Добавляем в чат группы
-      addMemberToGroupChat(groupId, user.id, user.name, store.dispatch);
-    }
-    // Удаляем запрос
-    setJoinRequests((prev) => ({
-      ...prev,
-      [groupId]: (prev[groupId] ?? []).filter((r) => r.userId !== userId),
-    }));
-    toast({ title: "Участник добавлен в группу" });
-  }, []);
+  const acceptJoinRequest = useCallback(
+    (groupId: number, userId: number) => {
+      const user = allUsers.find((m) => m.id === userId);
+
+      setGroupsState((prev) => {
+        const updated = prev.map((g) =>
+          g.id === groupId && !g.members.includes(userId)
+            ? { ...g, members: [...g.members, userId] }
+            : g,
+        );
+        saveGroups(updated);
+        return updated;
+      });
+
+      if (user) {
+        addMemberToGroupChat(groupId, user.id, user.name, store.dispatch);
+      }
+
+      // Сохраняем обновлённые joinRequests
+      setJoinRequests((prev) => {
+        const updated = {
+          ...prev,
+          [groupId]: (prev[groupId] ?? []).filter((r) => r.userId !== userId),
+        };
+        saveJoinRequests(updated);
+        return updated;
+      });
+
+      toast({ title: "Участник добавлен в группу" });
+    },
+    [allUsers],
+  );
 
   const declineJoinRequest = useCallback((groupId: number, userId: number) => {
-    setJoinRequests((prev) => ({
-      ...prev,
-      [groupId]: (prev[groupId] ?? []).filter((r) => r.userId !== userId),
-    }));
+    setJoinRequests((prev) => {
+      const updated = {
+        ...prev,
+        [groupId]: (prev[groupId] ?? []).filter((r) => r.userId !== userId),
+      };
+      saveJoinRequests(updated);
+      return updated;
+    });
     toast({ title: "Запрос отклонён" });
   }, []);
 
@@ -469,6 +482,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [currentUser, addNotificationForUser],
   );
+
   const acceptGroupInvite = useCallback(
     (notificationId: number) => {
       if (!currentUser) return;
@@ -479,14 +493,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!notif) return;
 
-      // 1. Добавляем пользователя в группу
-      setGroupsState((prev) =>
-        prev.map((g) =>
+      setGroupsState((prev) => {
+        const updated = prev.map((g) =>
           g.id === notif.groupId && !g.members.includes(currentUser.id)
             ? { ...g, members: [...g.members, currentUser.id] }
             : g,
-        ),
-      );
+        );
+        saveGroups(updated);
+        return updated;
+      });
 
       addMemberToGroupChat(
         notif.groupId,
@@ -494,55 +509,125 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         currentUser.name,
         store.dispatch,
       );
-      // 2. Удаляем уведомление
-      setNotificationsByUser((prev) => ({
-        ...prev,
-        [currentUser.id]:
-          prev[currentUser.id]?.filter((n) => n.id !== notificationId) || [],
-      }));
+
+      // 👇 Сохраняем обновлённые уведомления
+      saveUserNotifications(
+        currentUser.id,
+        (notificationsByUser[currentUser.id] ?? []).filter(
+          (n) => n.id !== notificationId,
+        ),
+      );
 
       toast({
         title: "Приглашение принято!",
         description: `Вы присоединились к группе "${notif.groupName}" на позицию "${notif.position}".`,
       });
     },
-    [currentUser, notifications, setGroupsState, setNotificationsByUser],
+    [currentUser, notificationsByUser, saveUserNotifications],
   );
 
   const declineGroupInvite = useCallback(
     (notificationId: number) => {
       if (!currentUser) return;
-
-      setNotificationsByUser((prev) => ({
-        ...prev,
-        [currentUser.id]:
-          prev[currentUser.id]?.filter((n) => n.id !== notificationId) || [],
-      }));
-
+      saveUserNotifications(
+        currentUser.id,
+        (notificationsByUser[currentUser.id] ?? []).filter(
+          (n) => n.id !== notificationId,
+        ),
+      );
       toast({ title: "Приглашение отклонено", variant: "destructive" });
     },
-    [currentUser, setNotificationsByUser],
+    [currentUser, notificationsByUser, saveUserNotifications],
   );
+
   const markAllRead = useCallback(() => {
     if (!currentUser) return;
-    setNotificationsByUser((prev) => ({
-      ...prev,
-      [currentUser.id]: (prev[currentUser.id] ?? []).map((n) => ({
+    saveUserNotifications(
+      currentUser.id,
+      (notificationsByUser[currentUser.id] ?? []).map((n) => ({
         ...n,
         read: true,
       })),
-    }));
-  }, [currentUser]);
+    );
+  }, [currentUser, notificationsByUser, saveUserNotifications]);
 
   const markRead = useCallback(
     (notificationId: number) => {
       if (!currentUser) return;
-      setNotificationsByUser((prev) => ({
-        ...prev,
-        [currentUser.id]: (prev[currentUser.id] ?? []).map((n) =>
+      saveUserNotifications(
+        currentUser.id,
+        (notificationsByUser[currentUser.id] ?? []).map((n) =>
           n.id === notificationId ? { ...n, read: true } : n,
         ),
-      }));
+      );
+    },
+    [currentUser, notificationsByUser, saveUserNotifications],
+  );
+
+  const createPost = useCallback(
+    (content: string, groupId: number | null, image?: string) => {
+      if (!currentUser) return;
+
+      const newPost: Post = {
+        id: Date.now(),
+        authorId: currentUser.id,
+        content,
+        timestamp: new Date().toISOString(),
+        likes: [],
+        comments: [],
+        groupId,
+        image,
+      };
+
+      setPosts((prev) => {
+        const updated = [newPost, ...prev];
+        savePosts(updated);
+        return updated;
+      });
+
+      toast({ title: "Пост опубликован!" });
+    },
+    [currentUser],
+  );
+  const addComment = useCallback(
+    (postId: number, text: string) => {
+      if (!currentUser) return;
+      const newComment: Comment = {
+        id: Date.now(),
+        userId: currentUser.id,
+        text,
+        timestamp: new Date().toISOString(),
+      };
+      setPosts((prev) => {
+        const updated = prev.map((p) =>
+          p.id === postId ? { ...p, comments: [...p.comments, newComment] } : p,
+        );
+        savePosts(updated);
+        return updated;
+      });
+    },
+    [currentUser],
+  );
+
+  const toggleLike = useCallback(
+    (postId: number) => {
+      if (!currentUser) return;
+      setPosts((prev) => {
+        const updated = prev.map((p) => {
+          if (p.id === postId) {
+            const hasLiked = p.likes.includes(currentUser.id);
+            return {
+              ...p,
+              likes: hasLiked
+                ? p.likes.filter((id) => id !== currentUser.id)
+                : [...p.likes, currentUser.id],
+            };
+          }
+          return p;
+        });
+        savePosts(updated);
+        return updated;
+      });
     },
     [currentUser],
   );
@@ -551,13 +636,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         currentUser,
-        notifications,
         unreadCount,
         groupsState,
         venuesState,
         allUsers,
-        notificationsByUser,
         joinRequests,
+        notifications,
+        posts,
         login,
         logout,
         register,
@@ -576,6 +661,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createGroup,
         acceptGroupInvite,
         declineGroupInvite,
+        createPost,
+        addComment,
+        toggleLike,
+        addNotificationForUser,
       }}
     >
       {children}

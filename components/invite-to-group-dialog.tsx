@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { GENRES, INSTRUMENTS, musicians } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { GENRES, INSTRUMENTS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -46,7 +46,7 @@ export function InviteToGroupDialog({
   toUserId,
   toUserName,
 }: InviteToGroupDialogProps) {
-  const { currentUser, groupsState, sendGroupInvite } = useAuth();
+  const { currentUser, groupsState, sendGroupInvite, allUsers } = useAuth();
   const dispatch = useAppDispatch();
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
@@ -127,7 +127,7 @@ export function InviteToGroupDialog({
       position,
       message,
     });
-    const user = musicians.find((u) => u.id.toString() === toUserId.toString());
+    const user = allUsers.find((u) => u.id.toString() === toUserId.toString());
     if (user) {
       dispatch(
         createDirectChat({

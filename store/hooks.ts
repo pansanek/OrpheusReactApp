@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useMemo } from "react";
 import type { RootState, AppDispatch } from "./store";
 import { Chat, ChatType } from "./types/chat.types";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import { selectChatsForUser } from "@/utils/chatSelectors";
 import { getChatDisplayInfo } from "@/utils/getChatDisplayInfo";
 import { getInitials } from "@/utils/chatUtils";

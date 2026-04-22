@@ -2,18 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  getGroupsByMusicianId,
-  getPostsByAuthorId,
-  AI_TAG_CATEGORIES,
-  USER_ROLES,
-  VENUE_ADMINS,
-  groups,
-  INSTRUMENTS,
-  GENRES,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -67,6 +56,13 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { normalizeImagePath } from "@/lib/utils";
+import {
+  getGroupsByMusicianId,
+  getMusicianById,
+  getPostsByAuthorId,
+} from "@/lib/storage";
+import { AI_TAG_CATEGORIES, GENRES, INSTRUMENTS } from "@/lib/constants";
+import { USER_ROLES, VENUE_ADMINS } from "@/lib/types";
 
 const ROLE_ICONS: Record<
   string,
@@ -83,7 +79,7 @@ const ROLE_ICONS: Record<
 export default function PublicProfilePage() {
   const params = useParams();
   const musicianId = Number(params?.id);
-  const { currentUser, sendGroupInvite } = useAuth();
+  const { currentUser, sendGroupInvite, groupsState, posts } = useAuth();
   const musician = getMusicianById(musicianId);
 
   // Invite dialog state
@@ -113,12 +109,12 @@ export default function PublicProfilePage() {
   }
 
   const isOwnProfile = currentUser?.id === musician.id;
-  const userGroups = getGroupsByMusicianId(musician.id);
-  const userPosts = getPostsByAuthorId(musician.id);
+  const userGroups = getGroupsByMusicianId(musician.id, groupsState);
+  const userPosts = getPostsByAuthorId(musician.id, posts);
 
   // Current user's groups (as creator or member)
   const myGroups = currentUser
-    ? groups.filter((g) => g.members.includes(currentUser.id))
+    ? groupsState.filter((g) => g.members.includes(currentUser.id))
     : [];
 
   const getInitials = (name: string) =>

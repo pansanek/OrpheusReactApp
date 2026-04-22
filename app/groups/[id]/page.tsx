@@ -2,15 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  getPostsByGroupId,
-  GENRES,
-  INSTRUMENTS,
-  type OpenPosition,
-  musicians,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -62,12 +55,15 @@ import { useParams } from "next/navigation";
 import { normalizeImagePath } from "@/lib/utils";
 import { RequestToJoinDialog } from "@/components/request-to-join-dialog";
 import { MusicianCard } from "@/components/musician-card";
+import { GENRES, INSTRUMENTS, OpenPosition } from "@/lib/types";
+import { getMusicianById, getPosts, getPostsByGroupId } from "@/lib/storage";
 
 export default function GroupPage() {
   const params = useParams();
   const groupId = Number(params?.id);
   const {
     currentUser,
+    allUsers,
     groupsState,
     updateGroup,
     joinRequests,
@@ -76,6 +72,7 @@ export default function GroupPage() {
     declineJoinRequest,
   } = useAuth();
   const group = groupsState.find((g) => g.id === groupId);
+
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     group?.avatar || null,
   );
@@ -206,7 +203,8 @@ export default function GroupPage() {
     .map((mid) => getMusicianById(mid))
     .filter(Boolean);
   const creator = getMusicianById(group.creatorId);
-  const groupPosts = getPostsByGroupId(group.id);
+  const posts = getPosts();
+  const groupPosts = getPostsByGroupId(group.id, posts);
   const isMember = currentUser && group.members.includes(currentUser.id);
   const isCreator = currentUser?.id === group.creatorId;
 
@@ -538,7 +536,7 @@ export default function GroupPage() {
             {joinRequests[group.id]?.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {joinRequests[group.id].map((req) => {
-                  const musician = musicians.find((m) => m.id === req.userId);
+                  const musician = allUsers.find((m) => m.id === req.userId);
                   if (!musician) return null;
                   return (
                     <Card

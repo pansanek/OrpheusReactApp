@@ -2,13 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-import {
-  groups,
-  getMusicianById,
-  getGroupsByMusicianId,
-  GENRES,
-} from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+
 import {
   Card,
   CardContent,
@@ -39,14 +34,25 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Users, Plus, Search, Music } from "lucide-react";
 import { CreateGroupDialog } from "@/components/create-group-dialog";
+import { getGroupsByMusicianId, getMusicianById } from "@/lib/storage";
 
 export default function GroupsPage() {
-  const { currentUser } = useAuth();
+  const {
+    currentUser,
+    allUsers,
+    groupsState,
+    updateGroup,
+    joinRequests,
+    sendJoinRequest,
+    acceptJoinRequest,
+    declineJoinRequest,
+  } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { allUsers } = useAuth();
-  const myGroups = currentUser ? getGroupsByMusicianId(currentUser.id) : [];
-  const allGroups = groups.filter(
+  const myGroups = currentUser
+    ? getGroupsByMusicianId(currentUser.id, groupsState)
+    : [];
+  const allGroups = groupsState.filter(
     (g) =>
       !searchQuery ||
       g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,7 +73,7 @@ export default function GroupsPage() {
     return colors[genre] || "bg-muted text-muted-foreground";
   };
 
-  const GroupCard = ({ group }: { group: (typeof groups)[0] }) => {
+  const GroupCard = ({ group }: { group: (typeof groupsState)[0] }) => {
     const members = group.members
       .map((id) => getMusicianById(id))
       .filter(Boolean);
