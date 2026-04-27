@@ -5,17 +5,18 @@ export type NotificationType =
   | "message";
 
 export interface BaseNotification {
-  id: number;
+  id: string;
   type: NotificationType;
-  fromUserId: number;
+  fromUserId: string;
   fromUserName: string;
+  toUserId: string;
   createdAt: string;
   read: boolean;
 }
 
 export interface GroupInviteNotification extends BaseNotification {
   type: "group_invite";
-  groupId: number;
+  groupId: string;
   groupName: string;
   position: string;
   message: string;
@@ -23,19 +24,19 @@ export interface GroupInviteNotification extends BaseNotification {
 
 export interface BookingRequestNotification extends BaseNotification {
   type: "booking_request";
-  venueId: number;
+  venueId: string;
   venueName: string;
   date: string;
   time: string;
   hours: number;
   totalPrice: number;
-  message: string;
+  message?: string;
 }
 
 export interface GroupJoinRequestNotification extends BaseNotification {
   type: "group_join_request";
   fromUserAvatar?: string;
-  groupId: number;
+  groupId: string;
   groupName: string;
   position: string;
   message: string;

@@ -54,8 +54,8 @@ import {
   Mic2,
   Sliders,
 } from "lucide-react";
-import { useParams } from "next/navigation";
-import { normalizeImagePath } from "@/lib/utils";
+import { useParams, useRouter } from "next/navigation";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import {
   getGroupsByMusicianId,
   getMusicianById,
@@ -78,13 +78,17 @@ const ROLE_ICONS: Record<
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const musicianId = Number(params?.id);
+  const musicianId = String(params?.id);
   const { currentUser, sendGroupInvite, groupsState, posts } = useAuth();
   const musician = getMusicianById(musicianId);
-
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
   // Invite dialog state
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupGenre, setNewGroupGenre] = useState("");
@@ -179,7 +183,7 @@ export default function PublicProfilePage() {
   };
 
   const handleInviteSubmit = () => {
-    if (!currentUser) return;
+    if (!currentUser && !selectedGroupId) return;
     if (!creatingNew && !selectedGroupId) {
       toast({ title: "Выберите группу", variant: "destructive" });
       return;
@@ -195,7 +199,7 @@ export default function PublicProfilePage() {
 
     sendGroupInvite({
       toUserId: musician.id,
-      groupId: creatingNew ? null : selectedGroupId,
+      groupId: selectedGroupId || "",
       newGroupData: creatingNew
         ? {
             name: newGroupName,
@@ -205,6 +209,7 @@ export default function PublicProfilePage() {
         : undefined,
       position,
       message: inviteMessage,
+      fromUserId: currentUser.id,
     });
 
     toast({

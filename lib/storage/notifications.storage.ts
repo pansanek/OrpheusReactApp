@@ -3,8 +3,8 @@ import { initializeRecordStorage, saveRecordToStorage } from "./utils";
 
 import { notifications as mockNotifications } from "@/lib/mock-data/notifications.mock";
 
-// 👇 Уведомления: Record<userId, AppNotification[]>
-export function getNotifications(): Record<number, AppNotification[]> {
+// Уведомления: Record<userId, AppNotification[]>
+export function getNotifications(): Record<string, AppNotification[]> {
   return initializeRecordStorage("notifications", mockNotifications);
 }
 
@@ -14,12 +14,16 @@ export function saveNotifications(
   saveRecordToStorage("notifications", notifications);
 }
 
-export function getNotificationsByUserId(userId: number): AppNotification[] {
-  return getNotifications()[userId] ?? [];
+export function getNotificationsByUserId(userId: string): AppNotification[] {
+  const allNotifRecord = getNotifications();
+
+  const allNotifs = Object.values(allNotifRecord).flat();
+
+  return allNotifs.filter((notif) => notif.toUserId === userId);
 }
 
 export function addNotification(
-  userId: number,
+  userId: string,
   notification: AppNotification,
 ): void {
   const all = getNotifications();
@@ -31,8 +35,8 @@ export function addNotification(
 }
 
 export function markNotificationRead(
-  userId: number,
-  notificationId: number,
+  userId: string,
+  notificationId: string,
 ): void {
   const all = getNotifications();
   const updated = {
@@ -44,7 +48,7 @@ export function markNotificationRead(
   saveNotifications(updated);
 }
 
-export function markAllRead(userId: number): void {
+export function markAllRead(userId: string): void {
   const all = getNotifications();
   const updated = {
     ...all,
@@ -54,8 +58,8 @@ export function markAllRead(userId: number): void {
 }
 
 export function deleteNotification(
-  userId: number,
-  notificationId: number,
+  userId: string,
+  notificationId: string,
 ): void {
   const all = getNotifications();
   const updated = {

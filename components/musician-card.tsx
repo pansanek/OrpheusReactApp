@@ -1,5 +1,5 @@
 "use client";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
@@ -86,7 +86,7 @@ export function MusicianCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <Link
-                  href={`/profile/${musician.id}`}
+                  href={isOwnCard ? "/profile" : `/profile/${musician.id}`}
                   className="font-semibold text-foreground hover:text-primary transition-colors truncate"
                 >
                   {musician.name}
@@ -163,7 +163,9 @@ export function MusicianCard({
                 size="sm"
                 className="flex-1 bg-transparent"
               >
-                <Link href={`/profile/${musician.id}`}>Профиль</Link>
+                <Link href={isOwnCard ? "/profile" : `/profile/${musician.id}`}>
+                  Профиль
+                </Link>
               </Button>
             </div>
           )}

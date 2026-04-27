@@ -19,8 +19,12 @@ export function getChatById(id: string): Chat | undefined {
   return getChats().find((c) => c.id === id);
 }
 
-export function getChatsByUserId(userId: number): Chat[] {
+export function getChatsByUserId(userId: string): Chat[] {
   return getChats().filter((c) => c.participants.includes(userId));
+}
+
+export function getChatByGroupId(groupId: string): Chat | undefined {
+  return getChats().find((c) => c.groupId === groupId);
 }
 
 export function addChat(chat: Chat): void {

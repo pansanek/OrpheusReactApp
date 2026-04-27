@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { AppNotification } from "@/lib/types/notification.types";
 import { useAuth } from "@/contexts/auth-context";
+import { getNotificationsByUserId } from "@/lib/storage";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -37,7 +38,7 @@ function NotificationItem({
   onRead,
 }: {
   notification: AppNotification;
-  onRead: (id: number) => void;
+  onRead: (id: string) => void;
 }) {
   if (notification.type === "group_invite") {
     return (
@@ -186,8 +187,9 @@ function NotificationItem({
 }
 
 export function NotificationsPanel() {
-  const { notifications, unreadCount, markAllRead, markRead } = useAuth();
-
+  const { unreadCount, markAllRead, markRead, currentUser } = useAuth();
+  if (!currentUser) return;
+  const notifications = getNotificationsByUserId(currentUser.id);
   return (
     <Popover>
       <PopoverTrigger asChild>

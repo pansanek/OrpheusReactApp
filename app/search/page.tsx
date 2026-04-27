@@ -21,7 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter, X, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
+import { useRouter } from "next/navigation";
 
 const ROLE_COLORS: Record<string, string> = {
   musician: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
@@ -35,8 +36,12 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function SearchPage() {
-  const { allUsers } = useAuth();
-
+  const { currentUser, allUsers } = useAuth();
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [instrument, setInstrument] = useState<string>("");

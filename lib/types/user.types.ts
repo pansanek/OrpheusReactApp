@@ -38,7 +38,7 @@ export interface JournalistProfile {
 }
 
 export interface Musician {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone?: string;

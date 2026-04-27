@@ -4,12 +4,12 @@ export interface OpenPosition {
 }
 
 export interface Group {
-  id: number;
+  id: string;
   name: string;
   description: string;
   genre: string;
-  members: number[]; // массив id музыкантов
-  creatorId: number;
+  members: string[]; // массив id музыкантов
+  creatorId: string;
   avatar: string | null;
   createdAt: string; // ISO string
   openPositions?: OpenPosition[];

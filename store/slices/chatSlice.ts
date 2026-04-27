@@ -1,8 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Chat, ChatState, ChatType, Message } from "../types/chat.types";
+
 import { musicians, venues } from "@/lib/mock-data";
 import { RootState } from "../store";
 import { useAuth } from "@/contexts/auth-context";
+import { getChats, getMessages, getMusicians, getVenues } from "@/lib/storage";
+import { Chat, ChatState, ChatType, Message } from "@/lib/types/chat.types";
+import { Musician, Venue } from "@/lib/types";
 
 const getInitials = (name: string) => {
   return name
@@ -11,75 +14,12 @@ const getInitials = (name: string) => {
     .join("")
     .toUpperCase();
 };
-const mockChats: Chat[] = [
-  {
-    id: "chat-1",
-    type: ChatType.DIRECT,
-    name: musicians[1].name,
-    avatar: musicians[1].avatar || getInitials(musicians[1].name),
-    participants: [musicians[0].id.toString(), musicians[1].id.toString()],
-    createdAt: Date.now() - 86400000,
-    updatedAt: Date.now() - 3600000,
-    unreadCount: 2,
-    lastMessage: {
-      id: "msg-1",
-      chatId: "chat-1",
-      senderId: musicians[1].id.toString(),
-      senderName: musicians[1].name,
-      content: "Давай встретимся завтра?",
-      timestamp: Date.now() - 3600000,
-      type: "text",
-      read: false,
-      status: "delivered",
-      senderAvatar: musicians[1].avatar,
-    },
-  },
-];
-
-const mockMessages: Record<string, Message[]> = {
-  "chat-1": [
-    {
-      id: "msg-1",
-      chatId: "chat-1",
-      senderId: musicians[0].id.toString(),
-      senderName: "Вы",
-      content: "Привет! Как дела?",
-      timestamp: Date.now() - 7200000,
-      type: "text",
-      read: true,
-      status: "read",
-      senderAvatar: null,
-    },
-    {
-      id: "msg-2",
-      chatId: "chat-1",
-      senderId: musicians[1].id.toString(),
-      senderName: musicians[1].name,
-      content: "Привет! Всё хорошо, спасибо.",
-      timestamp: Date.now() - 6900000,
-      type: "text",
-      read: true,
-      status: "read",
-      senderAvatar: musicians[1].avatar,
-    },
-    {
-      id: "msg-3",
-      chatId: "chat-1",
-      senderId: musicians[1].id.toString(),
-      senderName: musicians[1].name,
-      content: "Давай встретимся завтра?",
-      timestamp: Date.now() - 3600000,
-      type: "text",
-      read: false,
-      status: "delivered",
-      senderAvatar: musicians[1].avatar,
-    },
-  ],
-};
 
 const initialState: ChatState = {
-  chats: mockChats,
-  messages: mockMessages,
+  chats: getChats(),
+  messages: getMessages(),
+  musicians: getMusicians(),
+  venues: getVenues(),
   currentChatId: null,
   loading: false,
   error: null,
@@ -107,7 +47,12 @@ const chatSlice = createSlice({
         });
       }
     },
-
+    setMusicians: (state, action: PayloadAction<Musician[]>) => {
+      state.musicians = action.payload;
+    },
+    setVenues: (state, action: PayloadAction<Venue[]>) => {
+      state.venues = action.payload;
+    },
     // Добавить новое сообщение
     addMessage: (
       state,
@@ -135,16 +80,10 @@ const chatSlice = createSlice({
       action: PayloadAction<{
         participantId: string;
         participantName: string;
-        participantAvatar?: string;
         currentUserId: string;
       }>,
     ) => {
-      const {
-        participantId,
-        participantName,
-        participantAvatar,
-        currentUserId,
-      } = action.payload;
+      const { participantId, participantName, currentUserId } = action.payload;
 
       // Проверить, существует ли уже такой чат
       const existingChat = state.chats.find(
@@ -163,16 +102,10 @@ const chatSlice = createSlice({
         id: `chat-${Date.now()}`,
         type: ChatType.DIRECT,
         name: participantName,
-        avatar: participantAvatar,
         participants: [currentUserId, participantId],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
-        participantUser: {
-          id: participantId,
-          name: participantName,
-          avatar: participantAvatar,
-        },
       };
 
       state.chats.unshift(newChat);
@@ -207,7 +140,6 @@ const chatSlice = createSlice({
         id: id,
         type: ChatType.GROUP,
         name,
-        description,
         participants: [currentUserId, ...participantIds],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -230,7 +162,7 @@ const chatSlice = createSlice({
         venueName: string;
         venueLogo: string;
         venueAdmin: string;
-        type?: string;
+        type: string;
         currentUserId: string;
       }>,
     ) => {
@@ -239,7 +171,7 @@ const chatSlice = createSlice({
 
       // Проверить, существует ли уже такой чат
       const existingChat = state.chats.find(
-        (c) => c.type === ChatType.VENUE && c.Venue?.id === venueId,
+        (c) => c.type === ChatType.VENUE && c.venue === venueId,
       );
 
       if (existingChat) {
@@ -256,12 +188,7 @@ const chatSlice = createSlice({
         createdAt: Date.now(),
         updatedAt: Date.now(),
         unreadCount: 0,
-        Venue: {
-          id: venueId,
-          name: venueName,
-          logo: venueLogo,
-          type,
-        },
+        venue: venueId,
       };
 
       state.chats.unshift(newChat);
@@ -279,7 +206,12 @@ const chatSlice = createSlice({
         state.currentChatId = state.chats[0]?.id || null;
       }
     },
-
+    setCurrentUser: (
+      state,
+      action: PayloadAction<{ id: string; venueAdminOf?: string[] }>,
+    ) => {
+      state.currentUser = action.payload; // ← теперь селектор увидит currentUserId
+    },
     // Установить фильтр
     setFilter: (
       state,
@@ -306,11 +238,64 @@ const chatSlice = createSlice({
       state.error = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(addParticipantToChat.fulfilled, (state, action) => {
+        const { chatId, userId, chatType } = action.payload;
+
+        const chat = state.chats.find((c) => c.id === chatId);
+        if (!chat) return;
+
+        if (!chat.participants.includes(userId)) {
+          chat.participants.push(String(userId));
+          chat.updatedAt = new Date().getTime();
+        }
+
+        if (chatType === ChatType.GROUP && chat.membersCount) {
+          chat.membersCount += 1;
+        }
+      })
+      .addCase(addParticipantToChat.rejected, (state, action) => {
+        state.error = action.payload as string;
+      })
+      .addCase(addParticipantToChat.pending, (state) => {
+        state.loading = true;
+      });
+  },
 });
 
 export const addParticipantToChat = createAsyncThunk(
   "chat/addParticipant",
-  async (payload: { chatId: string; userId: number }) => payload,
+  async (
+    payload: { chatId: string; userId: string },
+    { getState, rejectWithValue },
+  ) => {
+    const state = getState() as RootState;
+    const { chatId, userId } = payload;
+
+    // Валидация 1: чат существует?
+    const chat = state.chats.chats.find((c) => c.id === chatId);
+    if (!chat) {
+      return rejectWithValue("Чат не найден");
+    }
+
+    // Валидация 2: пользователь уже в чате?
+    if (chat.participants.includes(userId)) {
+      return rejectWithValue("Пользователь уже в чате");
+    }
+
+    //  Валидация 3: пользователь существует в справочнике?
+    const musicianExists = state.chats.musicians?.some(
+      (m) => String(m.id) === String(userId),
+    );
+    if (!musicianExists && chat.type !== ChatType.VENUE) {
+      // Для VENUE-чатов участник может быть админом учреждения, которого нет в musicians
+      return rejectWithValue("Пользователь не найден");
+    }
+
+    // Если всё ок — возвращаем данные для обновления стейта
+    return { chatId, userId, chatType: chat.type };
+  },
 );
 
 export const {
@@ -323,9 +308,10 @@ export const {
   setFilter,
   clearError,
   setError,
+  setMusicians,
+  setVenues,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
-
 export const selectCurrentChatId = (state: RootState) =>
   state.chats.currentChatId;

@@ -10,12 +10,12 @@ export function saveGroups(groups: Group[]): void {
   saveToStorage("groups", groups);
 }
 
-export function getGroupById(id: number): Group | undefined {
+export function getGroupById(id: string): Group | undefined {
   return getGroups().find((g) => g.id === id);
 }
 
 export function getPostsByGroupId(
-  groupId: number,
+  groupId: string,
   posts: import("@/lib/types").Post[],
 ): import("@/lib/types").Post[] {
   return posts.filter((p) => p.groupId === groupId);

@@ -7,6 +7,7 @@ export function getPosts(): Post[] {
 }
 
 export function savePosts(posts: Post[]): void {
+  console.warn(posts);
   saveToStorage("posts", posts);
 }
 

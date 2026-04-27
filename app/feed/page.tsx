@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
-import { getMusicianById, type Post } from "@/lib/mock-data";
+import { getMusicianById } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -29,16 +29,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Extend Post type locally with media
-type PostWithMedia = Post & {
-  media?: { type: "image" | "video" | "audio"; url: string; name?: string }[];
-};
+import { Post } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export default function FeedPage() {
   const { currentUser, allUsers, posts, createPost, addComment, toggleLike } =
     useAuth();
-  const [feedPosts, setFeedPosts] = useState<PostWithMedia[]>(posts);
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
+  const [feedPosts, setFeedPosts] = useState<Post[]>(posts);
   const [newPostContent, setNewPostContent] = useState("");
   const [attachedMedia, setAttachedMedia] = useState<
     { type: "image" | "video" | "audio"; url: string; name: string }[]
@@ -87,8 +89,8 @@ export default function FeedPage() {
   const handlePublish = () => {
     if (!currentUser || (!newPostContent.trim() && attachedMedia.length === 0))
       return;
-    const newPost: PostWithMedia = {
-      id: Date.now(),
+    const newPost: Post = {
+      id: Date.now().toString(),
       authorId: currentUser.id,
       content: newPostContent.trim(),
       timestamp: new Date().toISOString(),
@@ -97,14 +99,19 @@ export default function FeedPage() {
       groupId: null,
       media: attachedMedia.length > 0 ? [...attachedMedia] : undefined,
     };
+    console.warn("feed", newPost);
     setFeedPosts((prev) => [newPost, ...prev]);
-    createPost(newPostContent.trim(), null, attachedMedia[0]?.url);
+    createPost(
+      newPostContent.trim(),
+      null,
+      attachedMedia.length > 0 ? [...attachedMedia] : undefined,
+    );
     setNewPostContent("");
     setAttachedMedia([]);
   };
 
   // Per-post component
-  const PostCard = ({ post }: { post: PostWithMedia }) => {
+  const PostCard = ({ post }: { post: Post }) => {
     const author = getMusicianById(post.authorId);
     const isLiked = currentUser ? post.likes.includes(currentUser.id) : false;
     const likesCount = post.likes.length;
@@ -122,7 +129,7 @@ export default function FeedPage() {
     const handleComment = () => {
       if (!currentUser || !commentText.trim()) return;
       const newComment = {
-        id: Date.now(),
+        id: Date.now().toString(),
         userId: currentUser.id,
         text: commentText.trim(),
         timestamp: new Date().toISOString(),

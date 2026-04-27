@@ -33,7 +33,7 @@ export function addMessage(chatId: string, message: Message): void {
   saveMessages(updated);
 }
 
-export function removeMessage(chatId: string, messageId: number): void {
+export function removeMessage(chatId: string, messageId: string): void {
   const all = getMessages();
   const updated = {
     ...all,
@@ -42,7 +42,7 @@ export function removeMessage(chatId: string, messageId: number): void {
   saveMessages(updated);
 }
 
-export function markMessagesRead(chatId: string, userId: number): void {
+export function markMessagesRead(chatId: string, userId: string): void {
   const all = getMessages();
   const updated = {
     ...all,

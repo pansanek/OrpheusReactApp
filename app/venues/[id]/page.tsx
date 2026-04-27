@@ -58,9 +58,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookingDialog } from "@/components/booking-dialog";
 import { getMusicianById } from "@/lib/storage";
 import { Venue, VENUE_ADMINS } from "@/lib/types";
+import { normalizeImagePath } from "@/lib/utils/utils";
+import { VenueBookingRequestsPanel } from "@/components/venues/VenueBookingRequestsPanel";
 export default function VenuePage() {
   const params = useParams();
-  const venueId = Number(params?.id);
+  const venueId = String(params?.id);
 
   const { currentUser, venuesState, updateVenue, sendBookingRequest } =
     useAuth();
@@ -124,7 +126,6 @@ export default function VenuePage() {
   }, [venue?.id, venue?.avatar]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleAvatarChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -257,14 +258,12 @@ export default function VenuePage() {
                 {getTypeLabel(venue.type)}
               </span> */}
               <div className="relative shrink-0">
-                <Avatar className="lg:h-48 lg:w-72 w-full lg:aspect-auto">
+                <Avatar className="w-full lg:w-72 aspect-video lg:aspect-auto lg:h-48 bg-muted rounded-xl flex flex-col items-center justify-center gap-2 shrink-0">
                   <AvatarImage
                     src={
-                      venue.avatar
-                        ? venue.avatar.startsWith("/")
-                          ? venue.avatar
-                          : `/${venue.avatar}`
-                        : undefined
+                      normalizeImagePath(avatarUrl) ??
+                      normalizeImagePath(venue.avatar) ??
+                      undefined
                     }
                     alt={venue.name}
                   />
@@ -476,13 +475,7 @@ export default function VenuePage() {
               </div> */}
               <Avatar className="h-9 w-9">
                 <AvatarImage
-                  src={
-                    adminMusician.avatar
-                      ? adminMusician.avatar.startsWith("/")
-                        ? adminMusician.avatar
-                        : `/${adminMusician.avatar}`
-                      : undefined
-                  }
+                  src={normalizeImagePath(adminMusician.avatar) ?? undefined}
                   alt={adminMusician.name}
                 />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
@@ -509,7 +502,20 @@ export default function VenuePage() {
           )}
         </CardContent>
       </Card>
-
+      {currentUser?.id === adminId && (
+        <div className="mt-8">
+          <VenueBookingRequestsPanel
+            venueId={venue.id}
+            venueName={venue.name}
+            adminId={adminId}
+            onStatusChange={(updatedRequest) => {
+              // Опционально: синхронизация с другими компонентами
+              // Например, обновление календаря в сайдбаре
+              console.log("Status changed:", updatedRequest);
+            }}
+          />
+        </div>
+      )}
       {/* Booking Dialog */}
       {bookingVenue && (
         <BookingDialog

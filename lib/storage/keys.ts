@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   notifications: "umpsm_notifications",
   joinRequests: "umpsm_join_requests",
   sentInvites: "umpsm_sent_invites",
+  bookings: "umpsm_bookings",
 } as const;
 
 export type StorageKey = keyof typeof STORAGE_KEYS;

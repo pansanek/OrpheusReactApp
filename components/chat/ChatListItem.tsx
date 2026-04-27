@@ -1,16 +1,18 @@
 "use client";
 
 import React from "react";
-import { Chat, ChatType } from "@/store/types/chat.types";
+
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { Users, Building2, CheckCheck, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Chat, ChatType, ChatWithDisplay } from "@/lib/types/chat.types";
+import { getChatDisplayData } from "@/lib/utils/chat-display";
 
 interface ChatListItemProps {
-  chat: Chat;
+  chat: ChatWithDisplay;
   isActive: boolean;
   onClick: () => void;
   onDelete?: (chatId: string) => void;
@@ -22,20 +24,16 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   onClick,
   onDelete,
 }) => {
-  const getChatIcon = () => {
-    switch (chat.type) {
-      case ChatType.GROUP:
-        return <Users className="h-5 w-5" />;
-      case ChatType.VENUE:
-        return <Building2 className="h-5 w-5" />;
-      default:
-        return null;
-    }
-  };
-
   const getTimeString = () => {
-    if (!chat.lastMessage) return "";
-    const date = new Date(chat.lastMessage.timestamp);
+    if (!chat.lastMessage?.timestamp) return "";
+
+    // Конвертируем строку в число (Unary + или Number())
+    const timestamp = Number(chat.lastMessage.timestamp);
+
+    // Защита от невалидных значений
+    if (isNaN(timestamp)) return "";
+
+    const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
@@ -49,7 +47,8 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   };
 
   const isUnread = (chat.unreadCount || 0) > 0;
-
+  const isGroupOrVenue =
+    chat.type === ChatType.GROUP || chat.type === ChatType.VENUE;
   return (
     <div
       className={cn(
@@ -68,18 +67,34 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <Avatar className="h-12 w-12">
-          <AvatarImage src={chat.avatar ?? undefined} alt={chat.name} />
+          {/* Используем вычисленные поля */}
+          <AvatarImage
+            src={chat.displayAvatar ?? undefined}
+            alt={chat.displayName}
+          />
           <AvatarFallback className="bg-primary/10 text-primary">
-            {chat.type === ChatType.DIRECT
-              ? chat.name.charAt(0).toUpperCase()
-              : getChatIcon()}
+            {isGroupOrVenue ? (
+              chat.type === ChatType.GROUP ? (
+                <Users className="h-5 w-5" />
+              ) : (
+                <Building2 className="h-5 w-5" />
+              )
+            ) : (
+              // Для DIRECT: первые 2 буквы имени
+              chat.displayName
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()
+            )}
           </AvatarFallback>
         </Avatar>
-        {/* Online status for direct chats */}
-        {chat.type === ChatType.DIRECT &&
-          chat.participantUser?.status === "online" && (
-            <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
-          )}
+
+        {/* 🔹 Онлайн-индикатор через вычисленное поле */}
+        {chat.type === ChatType.DIRECT && chat.isOnline && (
+          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
+        )}
       </div>
 
       {/* Chat info */}
@@ -94,7 +109,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
                 : "font-medium text-foreground",
             )}
           >
-            {chat.name}
+            {chat.displayName}
           </h3>
           <time className="text-xs text-muted-foreground flex-shrink-0">
             {getTimeString()}

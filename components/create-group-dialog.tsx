@@ -42,7 +42,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 
 interface CreateGroupDialogProps {
   open: boolean;

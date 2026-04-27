@@ -1,5 +1,6 @@
+import { Chat } from "@/lib/types/chat.types";
 import { RootState } from "@/store/store";
-import { Chat } from "@/store/types/chat.types";
+
 import { createSelector } from "@reduxjs/toolkit";
 
 // Простой селектор: чаты, в которых состоит пользователь

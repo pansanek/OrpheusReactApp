@@ -1,17 +1,17 @@
 export interface Comment {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   text: string;
   timestamp: string; // ISO string
 }
 
 export interface Post {
-  id: number;
-  authorId: number;
+  id: string;
+  authorId: string;
   content: string;
   timestamp: string; // ISO string
-  likes: number[]; // массив id пользователей
+  likes: string[]; // массив id пользователей
   comments: Comment[];
-  groupId: number | null;
-  image?: string;
+  groupId: string | null;
+  media?: { type: "image" | "video" | "audio"; url: string; name?: string }[];
 }

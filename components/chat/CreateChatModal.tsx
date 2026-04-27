@@ -8,8 +8,9 @@ import {
   createVenueChat,
 } from "@/store/slices/chatSlice";
 import { useAuth } from "@/contexts/auth-context";
-import { musicians, venues } from "@/lib/mock-data";
 import { VENUE_ADMINS } from "@/lib/types";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { normalizeImagePath } from "@/lib/utils/utils";
 
 interface CreateChatModalProps {
   isOpen: boolean;
@@ -34,17 +35,16 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
-  const { currentUser } = useAuth();
+  const { currentUser, allUsers, venuesState } = useAuth();
   const handleCreateDirectChat = () => {
     if (!selectedUser) return;
 
-    const user = musicians.find((u) => u.id.toString() === selectedUser);
+    const user = allUsers.find((u) => u.id.toString() === selectedUser);
     if (user) {
       dispatch(
         createDirectChat({
           participantId: user.id.toString(),
           participantName: user.name,
-          participantAvatar: user.avatar || getInitials(user.name),
           currentUserId: currentUser?.id.toString() || "user",
         }),
       );
@@ -68,7 +68,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
   const handleCreateVenueChat = () => {
     if (!selectedVenue) return;
 
-    const venue = venues.find((i) => i.id.toString() === selectedVenue);
+    const venue = venuesState.find((i) => i.id.toString() === selectedVenue);
     const venueId = venue?.id ?? 1;
     const adminId = VENUE_ADMINS[venueId] ?? 1;
     if (venue) {
@@ -160,7 +160,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4">
           {tab === "direct" && (
             <div className="space-y-2">
-              {musicians.map((user) => (
+              {allUsers.map((user) => (
                 <button
                   key={user.id}
                   onClick={() => setSelectedUser(user.id.toString())}
@@ -170,11 +170,15 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
                       : "hover:bg-gray-50 border border-transparent"
                   }`}
                 >
-                  <img
-                    src={user.avatar || "/placeholder.svg"}
-                    alt={user.name}
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={normalizeImagePath(user.avatar) ?? undefined}
+                      alt={user.name}
+                    />
+                    <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                      {user.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="text-sm text-gray-900">{user.name}</span>
                 </button>
               ))}
@@ -194,7 +198,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
                 <p className="text-sm font-medium text-gray-700">
                   Участники ({selectedUsers.length})
                 </p>
-                {musicians.map((user) => (
+                {allUsers.map((user) => (
                   <label
                     key={user.id}
                     className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer"
@@ -205,11 +209,15 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
                       onChange={() => toggleUserSelection(user.id.toString())}
                       className="w-4 h-4"
                     />
-                    <img
-                      src={user.avatar || "/placeholder.svg"}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage
+                        src={normalizeImagePath(user.avatar) ?? undefined}
+                        alt={user.name}
+                      />
+                      <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
+                        {user.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="text-sm text-gray-900">{user.name}</span>
                   </label>
                 ))}
@@ -219,7 +227,7 @@ export const CreateChatModal: React.FC<CreateChatModalProps> = ({
 
           {tab === "Venue" && (
             <div className="space-y-2">
-              {venues.map((Venue) => (
+              {venuesState.map((Venue) => (
                 <button
                   key={Venue.id}
                   onClick={() => setSelectedVenue(Venue.id.toString())}

@@ -35,6 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Users, Plus, Search, Music } from "lucide-react";
 import { CreateGroupDialog } from "@/components/create-group-dialog";
 import { getGroupsByMusicianId, getMusicianById } from "@/lib/storage";
+import { useRouter } from "next/navigation";
 
 export default function GroupsPage() {
   const {
@@ -47,6 +48,11 @@ export default function GroupsPage() {
     acceptJoinRequest,
     declineJoinRequest,
   } = useAuth();
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const myGroups = currentUser

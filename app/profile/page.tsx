@@ -86,7 +86,7 @@ const ROLE_ICONS: Record<
 };
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { GroupInviteDialog } from "@/components/group-invite-dialog";
 import { getSentInvites, getSentInvitesByUserId } from "@/lib/storage";
 import { GroupInviteNotification } from "@/lib/types/notification.types";
@@ -1074,7 +1074,8 @@ export default function ProfilePage() {
             fromUserName:
               allUsers.find((u) => u.id === selectedInvite.fromUserId)?.name ??
               "Пользователь",
-            groupId: selectedInvite.groupId ?? 0,
+            toUserId: currentUser.id,
+            groupId: selectedInvite.groupId ?? "0",
             groupName: selectedInvite.groupName ?? "",
             position: selectedInvite.position,
             message: selectedInvite.message,

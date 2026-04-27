@@ -39,7 +39,7 @@ import {
   Check,
   Users,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { INSTRUMENTS, GENRES, VENUE_TYPES } from "@/lib/constants";
 import {
   TeacherProfile,
@@ -818,7 +818,7 @@ export default function LoginPage() {
     Partial<JournalistProfile>
   >({});
 
-  const handleLogin = (userId: number) => {
+  const handleLogin = (userId: string) => {
     login(userId);
     router.push("/");
   };

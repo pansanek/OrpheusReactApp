@@ -52,7 +52,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { RequestToJoinDialog } from "@/components/request-to-join-dialog";
 import { MusicianCard } from "@/components/musician-card";
 import { GENRES, INSTRUMENTS, OpenPosition } from "@/lib/types";
@@ -60,7 +60,7 @@ import { getMusicianById, getPosts, getPostsByGroupId } from "@/lib/storage";
 
 export default function GroupPage() {
   const params = useParams();
-  const groupId = Number(params?.id);
+  const groupId = String(params?.id);
   const {
     currentUser,
     allUsers,
@@ -237,13 +237,9 @@ export default function GroupPage() {
               <Avatar className="h-24 w-24">
                 <AvatarImage
                   src={
-                    normalizeImagePath(avatarUrl)
-                      ? group.avatar
-                        ? group.avatar.startsWith("/")
-                          ? group.avatar
-                          : `/${group.avatar}`
-                        : undefined
-                      : undefined
+                    normalizeImagePath(avatarUrl) ??
+                    normalizeImagePath(group.avatar) ??
+                    undefined
                   }
                   alt={group.name}
                 />
@@ -432,11 +428,7 @@ export default function GroupPage() {
                           <Avatar className="h-12 w-12">
                             <AvatarImage
                               src={
-                                member.avatar
-                                  ? member.avatar.startsWith("/")
-                                    ? member.avatar
-                                    : `/${member.avatar}`
-                                  : undefined
+                                normalizeImagePath(member.avatar) ?? undefined
                               }
                               alt={member.name}
                             />
@@ -490,6 +482,12 @@ export default function GroupPage() {
                       <div className="flex items-center gap-3">
                         <Link href={`/profile/${author.id}`}>
                           <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={
+                                normalizeImagePath(author.avatar) ?? undefined
+                              }
+                              alt={author.name}
+                            />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getInitials(author.name)}
                             </AvatarFallback>

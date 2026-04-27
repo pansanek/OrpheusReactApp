@@ -8,22 +8,26 @@ import { STORAGE_KEYS } from "./keys";
 import { joinRequests as mockJoinRequests } from "@/lib/mock-data/join-requests.mock";
 import { JoinRequest } from "../types/request.types";
 
-export function getJoinRequests(): Record<number, JoinRequest[]> {
+export function getJoinRequests(): Record<string, JoinRequest[]> {
   return initializeRecordStorage("joinRequests", mockJoinRequests);
 }
 
 export function saveJoinRequests(
-  requests: Record<number, JoinRequest[]>,
+  requests: Record<string, JoinRequest[]>,
 ): void {
   saveRecordToStorage("joinRequests", requests);
 }
 
-export function getJoinRequestsRaw(): Record<number, JoinRequest[]> | null {
+export function getJoinRequestsRaw(): Record<string, JoinRequest[]> | null {
   return getRecordFromStorage("joinRequests");
 }
 
-export function getJoinRequestsByGroupId(groupId: number): JoinRequest[] {
-  return getJoinRequests()[groupId] ?? [];
+export function getJoinRequestsByGroupId(groupId: string): JoinRequest[] {
+  const allRequestsRecord = getJoinRequests();
+
+  const allRequests = Object.values(allRequestsRecord).flat();
+
+  return allRequests.filter((request) => request.groupId === groupId);
 }
 
 export function addJoinRequest(request: JoinRequest): void {
@@ -36,8 +40,8 @@ export function addJoinRequest(request: JoinRequest): void {
 }
 
 export function updateJoinRequestStatus(
-  groupId: number,
-  userId: number,
+  groupId: string,
+  userId: string,
   status: "pending" | "approved" | "rejected",
 ): void {
   const all = getJoinRequests();
@@ -50,7 +54,7 @@ export function updateJoinRequestStatus(
   saveJoinRequests(updated);
 }
 
-export function removeJoinRequest(groupId: number, userId: number): void {
+export function removeJoinRequest(groupId: string, userId: string): void {
   const all = getJoinRequests();
   const updated = {
     ...all,
@@ -59,7 +63,7 @@ export function removeJoinRequest(groupId: number, userId: number): void {
   saveJoinRequests(updated);
 }
 
-export function getPendingRequestsByGroupId(groupId: number): JoinRequest[] {
+export function getPendingRequestsByGroupId(groupId: string): JoinRequest[] {
   return getJoinRequestsByGroupId(groupId).filter(
     (r) => r.status === "pending",
   );

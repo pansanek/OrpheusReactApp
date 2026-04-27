@@ -41,6 +41,7 @@ const tagSuggestions = [
 export default function AITagsPage() {
   const router = useRouter();
   const { currentUser, addAITag, removeAITag } = useAuth();
+
   const [newTagText, setNewTagText] = useState("");
   const [newTagCategory, setNewTagCategory] = useState("");
 

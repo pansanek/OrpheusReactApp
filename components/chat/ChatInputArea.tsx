@@ -3,9 +3,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAppDispatch, useCurrentChat } from "@/store/hooks";
 import { addMessage } from "@/store/slices/chatSlice";
-import { Message } from "@/store/types/chat.types";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
+import { Message } from "@/lib/types/chat.types";
 
 export const ChatInputArea: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -33,8 +33,6 @@ export const ChatInputArea: React.FC = () => {
       id: `msg-${Date.now()}`,
       chatId: currentChat.id,
       senderId: currentUser.id.toString(),
-      senderName: currentUser.name,
-      senderAvatar: currentUser?.avatar,
       content: message.trim(),
       timestamp: Date.now(),
       type: "text",

@@ -1,6 +1,7 @@
 export interface JoinRequest {
-  userId: number;
-  groupId: number;
+  id: string;
+  userId: string;
+  groupId: string;
   position: string;
   message: string;
   createdAt: string;
@@ -8,10 +9,10 @@ export interface JoinRequest {
 }
 
 export interface SentInvite {
-  id: number;
-  fromUserId: number;
-  toUserId: number;
-  groupId: number | null;
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  groupId: string;
   groupName?: string;
   position: string;
   message: string;

@@ -26,17 +26,17 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { ChevronRight, Crown, Plus, UserPlus, Users } from "lucide-react";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { useAppDispatch } from "@/store/hooks";
 import { addMessage, createDirectChat } from "@/store/slices/chatSlice";
 import { getInitials } from "@/utils/chatUtils";
-import { Message } from "@/store/types/chat.types";
 import { RootState, store } from "@/store/store";
+import { Message } from "@/lib/types/chat.types";
 
 interface InviteToGroupDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  toUserId: number;
+  toUserId: string;
   toUserName: string;
 }
 
@@ -48,7 +48,7 @@ export function InviteToGroupDialog({
 }: InviteToGroupDialogProps) {
   const { currentUser, groupsState, sendGroupInvite, allUsers } = useAuth();
   const dispatch = useAppDispatch();
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupGenre, setNewGroupGenre] = useState("");
@@ -113,10 +113,10 @@ export function InviteToGroupDialog({
       toast({ title: "Укажите позицию", variant: "destructive" });
       return;
     }
-
+    const groupId = selectedGroupId ? selectedGroupId : "null";
     sendGroupInvite({
       toUserId,
-      groupId: creatingNew ? null : selectedGroupId,
+      groupId: creatingNew ? "null" : groupId,
       newGroupData: creatingNew
         ? {
             name: newGroupName,
@@ -126,6 +126,7 @@ export function InviteToGroupDialog({
         : undefined,
       position,
       message,
+      fromUserId: currentUser.id,
     });
     const user = allUsers.find((u) => u.id.toString() === toUserId.toString());
     if (user) {
@@ -133,7 +134,6 @@ export function InviteToGroupDialog({
         createDirectChat({
           participantId: user.id.toString(),
           participantName: user.name,
-          participantAvatar: user.avatar || getInitials(user.name),
           currentUserId: currentUser?.id.toString() || "user",
         }),
       );
@@ -147,13 +147,11 @@ export function InviteToGroupDialog({
           id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           chatId,
           senderId: currentUser.id.toString(),
-          senderName: currentUser.name,
-          senderAvatar: currentUser?.avatar,
           content: message.trim(),
           type: "text",
           timestamp: Date.now(),
-          status: "sent", // или 'pending' если ждёте ответа от сервера
-          // добавьте другие поля, если они есть в вашем типе
+          status: "sent",
+          read: false,
         };
 
         dispatch(

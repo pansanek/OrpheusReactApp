@@ -10,11 +10,18 @@ export function normalizeImagePath(
 ): string | undefined {
   console.log(path);
   if (!path) return undefined;
-
+  if (path?.length > 1_000_000) {
+    console.warn(
+      "Avatar слишком большой:",
+      (path.length / 1024 / 1024).toFixed(2),
+      "MB",
+    );
+  }
   if (
     path.startsWith("http") ||
     path.startsWith("data:") ||
-    path.startsWith("/")
+    path.startsWith("/") ||
+    path.startsWith("blob")
   ) {
     return path;
   }

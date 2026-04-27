@@ -1,5 +1,5 @@
 export interface Venue {
-  id: number;
+  id: string;
   name: string;
   address: string;
   coordinates: [number, number]; // [lat, lng]
@@ -19,4 +19,9 @@ export interface Venue {
 }
 
 // Маппинг venueId → adminUserId (для моков)
-export const VENUE_ADMINS: Record<number, number> = { 1: 3, 2: 1, 3: 2, 4: 4 };
+export const VENUE_ADMINS: Record<string, string> = {
+  "1": "3",
+  "2": "1",
+  "3": "2",
+  "4": "4",
+};

@@ -35,13 +35,19 @@ import {
 } from "lucide-react";
 import { VenuesMap } from "@/components/venues/VenuesMap";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { Venue } from "@/lib/types";
+import { useRouter } from "next/navigation";
 const venueTypes = ["Все", "студия", "репетиционная база", "концертный зал"];
 type ViewMode = "list" | "map";
 
 export default function VenuesPage() {
   const { venuesState, currentUser } = useAuth();
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
   const [searchQuery, setSearchQuery] = useState("");
   const [venueType, setVenueType] = useState("Все");
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);

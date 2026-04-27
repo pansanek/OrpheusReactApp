@@ -23,19 +23,19 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Send } from "lucide-react";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { useAppDispatch } from "@/store/hooks";
 import { addMessage, createDirectChat } from "@/store/slices/chatSlice";
 import { getInitials } from "@/utils/chatUtils";
-import { Message } from "@/store/types/chat.types";
 import { RootState, store } from "@/store/store";
+import { Message } from "@/lib/types/chat.types";
 
 interface RequestToJoinDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  groupId: number;
+  groupId: string;
   groupName: string;
-  groupCreatorId: number;
+  groupCreatorId: string;
 }
 
 export function RequestToJoinDialog({
@@ -84,7 +84,6 @@ export function RequestToJoinDialog({
         createDirectChat({
           participantId: creator.id.toString(),
           participantName: creator.name,
-          participantAvatar: creator.avatar || getInitials(creator.name),
           currentUserId: currentUser?.id.toString() || "user",
         }),
       );
@@ -97,12 +96,11 @@ export function RequestToJoinDialog({
             id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             chatId,
             senderId: currentUser.id.toString(),
-            senderName: currentUser.name,
-            senderAvatar: currentUser?.avatar,
             content: message.trim(),
             type: "text",
             timestamp: Date.now(),
             status: "sent",
+            read: false,
           };
           dispatch(addMessage({ chatId, message: newMessage }));
         }

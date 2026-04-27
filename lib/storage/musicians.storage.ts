@@ -40,19 +40,19 @@ export function searchMusicians(filters: {
 }
 
 // 👇 Вспомогательные функции
-export function getMusicianById(id: number): Musician | undefined {
+export function getMusicianById(id: string): Musician | undefined {
   return getMusicians().find((m) => m.id === id);
 }
 
 export function getGroupsByMusicianId(
-  musicianId: number,
+  musicianId: string,
   groups: import("@/lib/types").Group[],
 ): import("@/lib/types").Group[] {
   return groups.filter((g) => g.members.includes(musicianId));
 }
 
 export function getPostsByAuthorId(
-  authorId: number,
+  authorId: string,
   posts: import("@/lib/types").Post[],
 ): import("@/lib/types").Post[] {
   return posts.filter((p) => p.authorId === authorId);
@@ -60,7 +60,7 @@ export function getPostsByAuthorId(
 
 // Рекомендации (алгоритм остаётся тем же)
 export function getRecommendations(
-  currentUserId: number,
+  currentUserId: string,
 ): { musician: Musician; score: number }[] {
   const currentUser = getMusicianById(currentUserId);
   if (!currentUser) return [];

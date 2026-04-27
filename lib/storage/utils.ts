@@ -102,7 +102,7 @@ export function initializeRecordStorage<K extends string | number, T>(
 /** Сохранение данных типа Record<K, T[]> */
 export function saveRecordToStorage<K extends string | number, T>(
   key: StorageKey,
-  data: Record<K, T[]>, // 👈 FIX: Добавлено имя параметра "data"
+  data: Record<K, T[]>,
 ): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(data));

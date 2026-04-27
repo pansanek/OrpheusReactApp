@@ -1,3 +1,4 @@
+import { getBookingRequests } from "./booking.storage";
 import { getChats } from "./chats.storage";
 import { getGroups } from "./groups.storage";
 import { getJoinRequests } from "./join-requests.storage";
@@ -21,7 +22,7 @@ export * from "./messages.storage";
 export * from "./notifications.storage";
 export * from "./sent-invites.storage";
 export * from "./join-requests.storage";
-
+export * from "./booking.storage";
 export function initializeAllMockData(): void {
   if (typeof window === "undefined") return;
   getMusicians();
@@ -33,5 +34,5 @@ export function initializeAllMockData(): void {
   getNotifications();
   getJoinRequests();
   getSentInvites();
-  
+  getBookingRequests();
 }

@@ -1,18 +1,69 @@
-import { Chat, ChatType, Message } from "@/store/types/chat.types";
+import { Musician, Venue } from "@/lib/types";
+import { Chat, ChatType, Message } from "@/lib/types/chat.types";
+interface FormatChatNameOptions {
+  currentUserId: string;
+  musicians?: Musician[];
+  venues?: Venue[];
+  isVenueAdmin?: boolean; // Для VENUE: является ли пользователь админом учреждения
+}
 
 /**
- * Форматирует название чата в зависимости от типа
+ * Форматирует отображаемое имя чата на основе его типа и контекста
+ *
+ * @param chat - объект чата
+ * @param options - контекст: текущий пользователь, справочники пользователей/учреждений
+ * @returns Строка с именем для отображения в интерфейсе
  */
-export const formatChatName = (chat: Chat): string => {
+export const formatChatName = (
+  chat: Chat,
+  {
+    currentUserId,
+    musicians = [],
+    venues = [],
+    isVenueAdmin = false,
+  }: FormatChatNameOptions,
+): string => {
   switch (chat.type) {
-    case ChatType.DIRECT:
-      return chat.participantUser?.name || chat.name;
-    case ChatType.GROUP:
-      return `${chat.name} (${chat.membersCount} участников)`;
-    case ChatType.VENUE:
-      return `${chat.Venue?.name || chat.name}${chat.Venue?.type ? ` - ${chat.Venue?.type}` : ""}`;
+    case ChatType.DIRECT: {
+      // Находим ID другого участника (не текущего пользователя)
+      const otherUserId = chat.participants.find((id) => id !== currentUserId);
+      const otherUser = musicians.find((u) => u.id.toString() === otherUserId);
+      // Возвращаем имя с фолбэками
+      return otherUser?.name || `Пользователь #${otherUserId?.slice(-4)}`;
+    }
+
+    case ChatType.GROUP: {
+      const baseName = chat.name || "Групповой чат";
+      return chat.membersCount
+        ? `${baseName} (${chat.membersCount} участников)`
+        : baseName;
+    }
+
+    case ChatType.VENUE: {
+      if (isVenueAdmin) {
+        // Админ учреждения видит имя музыканта, с которым общается
+        const otherUserId = chat.participants.find(
+          (id) => id !== currentUserId,
+        );
+        const otherUser = musicians.find(
+          (u) => u.id.toString() === otherUserId,
+        );
+
+        return otherUser?.name || "Музыкант";
+      } else {
+        // Музыкант видит данные учреждения
+        const venue = venues
+          ? venues.find((u) => u.id.toString() === chat.venue)
+          : undefined;
+        const venueName = venue?.name || chat.name || "Учреждение";
+
+        // Добавляем тип учреждения, если есть
+        return venue?.type ? `${venueName} — ${venue.type}` : venueName;
+      }
+    }
+
     default:
-      return chat.name;
+      return chat.name || "Чат";
   }
 };
 
@@ -161,10 +212,6 @@ export const shouldShowAvatar = (
 
   // Показать если отправитель отличается
   if (currentMsg.senderId !== prevMsg.senderId) return true;
-
-  // Показать если прошло больше 5 минут
-  const timeDiff = currentMsg.timestamp - prevMsg.timestamp;
-  if (timeDiff > 5 * 60 * 1000) return true;
 
   return false;
 };

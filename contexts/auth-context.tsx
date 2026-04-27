@@ -7,7 +7,15 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import type { Musician, Group, Venue, Post, AITag, Comment } from "@/lib/types";
+import type {
+  Musician,
+  Group,
+  Venue,
+  Post,
+  AITag,
+  Comment,
+  BookingStatus,
+} from "@/lib/types";
 import { toast } from "@/components/ui/use-toast";
 import { CreateGroupFormValues } from "../lib/validations/group";
 import { store } from "@/store/store";
@@ -30,8 +38,11 @@ import {
   saveJoinRequests,
   getSentInvites,
   saveSentInvites,
+  addSentInvite,
+  getChatByGroupId,
+  updateSentInviteStatus,
+  updateJoinRequestStatus,
 } from "@/lib/storage";
-import type { Chat, Message } from "@/store/types/chat.types";
 import { addMemberToGroupChat, initGroupChat } from "../lib/group-chat-utils";
 import {
   AppNotification,
@@ -39,7 +50,14 @@ import {
   GroupInviteNotification,
   GroupJoinRequestNotification,
 } from "../lib/types/notification.types";
-import { JoinRequest } from "../lib/types/request.types";
+import { JoinRequest, SentInvite } from "../lib/types/request.types";
+import { BookingRequest } from "@/lib/types";
+import {
+  getBookingRequests,
+  hasTimeConflict,
+  saveBookingRequests,
+  updateBookingRequestStatus,
+} from "@/lib/storage/booking.storage";
 
 interface AuthContextType {
   currentUser: Musician | null;
@@ -49,53 +67,61 @@ interface AuthContextType {
   venuesState: Venue[];
   allUsers: Musician[];
   posts: Post[];
-  joinRequests: Record<number, JoinRequest[]>;
-
-  login: (userId: number) => void;
+  joinRequests: Record<string, JoinRequest[]>;
+  groupInvites: Record<string, SentInvite[]>;
+  login: (userId: string) => void;
   logout: () => void;
   register: (
     data: Omit<Musician, "id" | "aiTags" | "status" | "avatar">,
   ) => void;
   updateProfile: (data: Partial<Musician>) => void;
-  updateGroup: (groupId: number, data: Partial<Group>) => void;
-  updateVenue: (venueId: number, data: Partial<Venue>) => void;
+  updateGroup: (groupId: string, data: Partial<Group>) => void;
+  updateVenue: (venueId: string, data: Partial<Venue>) => void;
   addAITag: (tag: Omit<AITag, "id">) => void;
-  removeAITag: (tagId: number) => void;
+  removeAITag: (tagId: string) => void;
   sendGroupInvite: (params: {
-    toUserId: number;
-    groupId: number | null;
+    toUserId: string;
+    fromUserId: string;
+    groupId: string;
     newGroupData?: { name: string; genre: string; description: string };
     position: string;
     message: string;
   }) => void;
+  acceptSendInvite: (groupId: string, userId: string) => void;
+  declineSendInvite: (groupId: string, userId: string) => void;
   sendBookingRequest: (params: {
-    venueId: number;
+    venueId: string;
     venueName: string;
-    venueAdminId: number;
+    venueAdminId: string;
     date: string;
     time: string;
     hours: number;
     totalPrice: number;
     message: string;
   }) => void;
+  updateBookingStatus: (requestId: string, newStatus: BookingStatus) => boolean;
   markAllRead: () => void;
-  markRead: (notificationId: number) => void;
+  markRead: (notificationId: string) => void;
   sendJoinRequest: (params: {
-    toUserId: number;
-    groupId: number;
+    toUserId: string;
+    groupId: string;
     position: string;
     message: string;
   }) => void;
-  acceptJoinRequest: (groupId: number, userId: number) => void;
-  declineJoinRequest: (groupId: number, userId: number) => void;
-  createGroup: (data: CreateGroupFormValues) => number;
-  acceptGroupInvite: (notificationId: number) => void;
-  declineGroupInvite: (notificationId: number) => void;
-  createPost: (content: string, groupId: number | null, image?: string) => void;
-  addComment: (postId: number, text: string) => void;
-  toggleLike: (postId: number) => void;
+  acceptJoinRequest: (groupId: string, userId: string) => void;
+  declineJoinRequest: (groupId: string, userId: string) => void;
+  createGroup: (data: CreateGroupFormValues) => string;
+  acceptGroupInvite: (notificationId: string) => void;
+  declineGroupInvite: (notificationId: string) => void;
+  createPost: (
+    content: string,
+    groupId: string | null,
+    media?: { type: "image" | "video" | "audio"; url: string; name?: string }[],
+  ) => void;
+  addComment: (postId: string, text: string) => void;
+  toggleLike: (postId: string) => void;
   addNotificationForUser: (
-    userId: number,
+    userId: string,
     notification: AppNotification,
   ) => void;
 }
@@ -111,18 +137,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [notificationsByUser, setNotificationsByUser] =
     useState(getNotifications);
   const [joinRequests, setJoinRequests] = useState<
-    Record<number, JoinRequest[]>
+    Record<string, JoinRequest[]>
   >(
-    () => getJoinRequests(), // 👈 добавили () => для ленивой инициализации
+    () => getJoinRequests(), // добавили () => для ленивой инициализации
   );
-
+  const [groupInvites, setGroupInvites] = useState<
+    Record<string, SentInvite[]>
+  >(
+    () => getSentInvites(), // добавили () => для ленивой инициализации
+  );
+  const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>(
+    () => getBookingRequests(), // добавили () => для ленивой инициализации
+  );
   const notifications: AppNotification[] = currentUser
     ? (notificationsByUser[currentUser.id] ?? [])
     : [];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const addNotificationForUser = useCallback(
-    (userId: number, notification: AppNotification) => {
+    (userId: string, notification: AppNotification) => {
       setNotificationsByUser((prev) => {
         const updated = {
           ...prev,
@@ -136,7 +169,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const login = useCallback(
-    (userId: number) => {
+    (userId: string) => {
       const user = allUsers.find((m) => m.id === userId);
       if (user) setCurrentUser({ ...user });
     },
@@ -147,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     (data: Omit<Musician, "id" | "aiTags" | "status" | "avatar">) => {
       const newUser: Musician = {
         ...data,
-        id: Date.now(),
+        id: Date.now().toString(),
         avatar: null,
         status: "online",
         aiTags: [],
@@ -185,7 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const saveUserNotifications = useCallback(
-    (userId: number, updated: AppNotification[]) => {
+    (userId: string, updated: AppNotification[]) => {
       setNotificationsByUser((prev) => {
         const next = { ...prev, [userId]: updated };
         saveNotifications(next);
@@ -197,7 +230,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const addAITag = useCallback((tag: Omit<AITag, "id">) => {
     setCurrentUser((prev) => {
       if (!prev) return null;
-      const newTag = { ...tag, id: Date.now() };
+      const newTag = { ...tag, id: Date.now().toString() };
       const updatedUser = { ...prev, aiTags: [...prev.aiTags, newTag] };
 
       // Синхронизируем с allUsers и сохраняем
@@ -214,16 +247,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   const createGroup = useCallback(
     (data: CreateGroupFormValues) => {
-      if (!currentUser) return 0;
+      if (!currentUser) return "0";
 
-      //Адаптируйте эту маппинг-логику под вашу структуру OpenPosition, если она отличается
       const openPositions = data.openPositions.map((instrument) => ({
         instrument,
       }));
       const invites = data.invites;
       // const inviteUserIds = invites.map(item => item.userId);
       const newGroup: Group = {
-        id: Date.now(),
+        id: Date.now().toString(),
         name: data.name,
         description: data.description || "",
         genre: data.genre,
@@ -251,10 +283,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (invites.length > 0) {
         invites.forEach((invite) => {
           const notification: GroupInviteNotification = {
-            id: Date.now() + Math.random(),
+            id: Math.random().toString(),
             type: "group_invite",
             fromUserId: currentUser.id,
             fromUserName: currentUser.name,
+            toUserId: invite.userId,
             groupId: newGroup.id,
             groupName: newGroup.name,
             createdAt: new Date().toISOString(),
@@ -276,7 +309,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [currentUser, setGroupsState, addNotificationForUser],
   );
 
-  const updateGroup = useCallback((groupId: number, data: Partial<Group>) => {
+  const updateGroup = useCallback((groupId: string, data: Partial<Group>) => {
     setGroupsState((prev) => {
       const updated = prev.map((g) =>
         g.id === groupId ? { ...g, ...data } : g,
@@ -286,7 +319,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const updateVenue = useCallback((venueId: number, data: Partial<Venue>) => {
+  const updateVenue = useCallback((venueId: string, data: Partial<Venue>) => {
     setVenuesState((prev) => {
       const updated = prev.map((v) =>
         v.id === venueId ? { ...v, ...data } : v,
@@ -296,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const removeAITag = useCallback((tagId: number) => {
+  const removeAITag = useCallback((tagId: string) => {
     setCurrentUser((prev) => {
       if (!prev) return null;
       const updatedUser = {
@@ -318,11 +351,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendGroupInvite = useCallback(
     (params: {
-      toUserId: number;
-      groupId: number | null;
+      toUserId: string;
+      groupId: string;
       newGroupData?: { name: string; genre: string; description: string };
       position: string;
       message: string;
+      fromUserId: string;
     }) => {
       if (!currentUser) return;
 
@@ -333,16 +367,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const g = groupsState.find((g) => g.id === params.groupId);
         resolvedGroupName = g?.name ?? "";
       } else if (params.newGroupData) {
-        resolvedGroupId = Date.now();
+        // ⚠️ Если создаём новую группу, сначала нужно её реально создать и получить ID
+        // Для мока можно сгенерировать временный:
+        resolvedGroupId = `temp-${Date.now()}`;
         resolvedGroupName = params.newGroupData.name;
       }
 
+      setGroupInvites((prev) => {
+        const updated = {
+          ...prev,
+          // 👇 Ключ — groupId, внутри массив инвайтов
+          [resolvedGroupId]: [
+            ...(prev[resolvedGroupId] ?? []),
+            {
+              fromUserId: params.fromUserId,
+              toUserId: params.toUserId,
+              groupId: resolvedGroupId,
+              groupName: resolvedGroupName,
+              position: params.position,
+              message: params.message,
+              createdAt: new Date().toISOString(),
+              status: "sent" as const,
+              id: `si-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            },
+          ],
+        };
+        saveSentInvites(updated);
+        return updated;
+      });
+
       const notification: GroupInviteNotification = {
-        id: Date.now(),
+        id: Date.now().toString(),
         type: "group_invite",
         fromUserId: currentUser.id,
         fromUserName: currentUser.name,
-        groupId: resolvedGroupId ?? 0,
+        toUserId: params.toUserId,
+        groupId: resolvedGroupId,
         groupName: resolvedGroupName,
         position: params.position,
         message: params.message,
@@ -352,13 +412,110 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       addNotificationForUser(params.toUserId, notification);
     },
-    [currentUser, addNotificationForUser],
+    [currentUser, groupsState, addNotificationForUser],
   );
+
+  const acceptSendInvite = useCallback(
+    (groupId: string, userId: string) => {
+      const user = allUsers.find((m) => m.id === userId);
+      if (!user) return;
+      setGroupsState((prev) => {
+        const updated = prev.map((g) =>
+          g.id === groupId && !g.members.includes(userId)
+            ? { ...g, members: [...g.members, userId] }
+            : g,
+        );
+        saveGroups(updated);
+        return updated;
+      });
+      const chatId = getChatByGroupId(groupId);
+      if (!chatId) return;
+
+      addMemberToGroupChat(
+        groupId,
+        userId,
+        user.name,
+        chatId.id,
+        store.dispatch,
+      );
+      const sentInvites = getSentInvites(); // Получаем все отправленные инвайты
+
+      // Ищем инвайт: от кого (fromUserId) и какой ID, чтобы обновить статус
+      let foundFromUserId: string | undefined;
+      let foundInviteId: string | undefined;
+
+      for (const [fromUserId, invites] of Object.entries(sentInvites)) {
+        const invite = invites.find(
+          (i) =>
+            i.groupId === groupId &&
+            i.toUserId === userId &&
+            i.status === "sent",
+        );
+        if (invite) {
+          foundFromUserId = fromUserId;
+          foundInviteId = invite.id;
+          break;
+        }
+      }
+
+      // Если нашли — обновляем статус
+      if (foundFromUserId && foundInviteId) {
+        updateSentInviteStatus(foundFromUserId, foundInviteId, "accepted");
+      }
+
+      // Сохраняем обновлённые
+      setGroupInvites((prev) => {
+        const updated = {
+          ...prev,
+          [groupId]: (prev[groupId] ?? []).filter((r) => r.toUserId !== userId),
+        };
+        saveSentInvites(updated);
+        return updated;
+      });
+
+      toast({ title: "Участник добавлен в группу" });
+    },
+    [allUsers],
+  );
+
+  const declineSendInvite = useCallback((groupId: string, userId: string) => {
+    setGroupInvites((prev) => {
+      const updated = {
+        ...prev,
+        [groupId]: (prev[groupId] ?? []).filter((r) => r.toUserId !== userId),
+      };
+      saveSentInvites(updated);
+      return updated;
+    });
+    const sentInvites = getSentInvites(); // Получаем все отправленные инвайты
+
+    // Ищем инвайт: от кого (fromUserId) и какой ID, чтобы обновить статус
+    let foundFromUserId: string | undefined;
+    let foundInviteId: string | undefined;
+
+    for (const [fromUserId, invites] of Object.entries(sentInvites)) {
+      const invite = invites.find(
+        (i) =>
+          i.groupId === groupId && i.toUserId === userId && i.status === "sent",
+      );
+      if (invite) {
+        foundFromUserId = fromUserId;
+        foundInviteId = invite.id;
+        break;
+      }
+    }
+
+    // Если нашли — обновляем статус
+    if (foundFromUserId && foundInviteId) {
+      updateSentInviteStatus(foundFromUserId, foundInviteId, "declined");
+    }
+    toast({ title: "Запрос отклонён" });
+  }, []);
 
   const sendJoinRequest = useCallback(
     (params: {
-      toUserId: number;
-      groupId: number;
+      toUserId: string;
+      groupId: string;
       position: string;
       message: string;
     }) => {
@@ -371,6 +528,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           [params.groupId]: [
             ...(prev[params.groupId] ?? []),
             {
+              id: Date.now().toString(),
               userId: currentUser!.id,
               position: params.position,
               message: params.message,
@@ -387,12 +545,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // 2. Создаём уведомление для создателя группы
       const group = groupsState.find((g) => g.id === params.groupId);
       const notification: GroupJoinRequestNotification = {
-        id: Date.now(),
+        id: Date.now().toString(),
         type: "group_join_request",
         fromUserId: currentUser.id,
         fromUserName: currentUser.name,
         fromUserAvatar: currentUser.avatar || undefined,
         groupId: params.groupId,
+        toUserId: params.toUserId,
         groupName: group?.name ?? "",
         position: params.position,
         message: params.message,
@@ -405,9 +564,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [currentUser, groupsState, addNotificationForUser],
   );
   const acceptJoinRequest = useCallback(
-    (groupId: number, userId: number) => {
+    (groupId: string, userId: string) => {
       const user = allUsers.find((m) => m.id === userId);
-
+      if (!user) return;
       setGroupsState((prev) => {
         const updated = prev.map((g) =>
           g.id === groupId && !g.members.includes(userId)
@@ -417,11 +576,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveGroups(updated);
         return updated;
       });
+      const chatId = getChatByGroupId(groupId);
+      if (!chatId) return;
 
-      if (user) {
-        addMemberToGroupChat(groupId, user.id, user.name, store.dispatch);
+      addMemberToGroupChat(
+        groupId,
+        userId,
+        user.name,
+        chatId.id,
+        store.dispatch,
+      );
+      const joinRequests = getJoinRequests(); // Получаем все отправленные инвайты
+
+      // Ищем инвайт: от кого (fromUserId) и какой ID, чтобы обновить статус
+      let foundFromUserId: string | undefined;
+      let foundRequestId: string | undefined;
+
+      for (const [fromUserId, requests] of Object.entries(joinRequests)) {
+        const request = requests.find(
+          (i) =>
+            i.groupId === groupId &&
+            i.userId === userId &&
+            i.status === "pending",
+        );
+        if (request) {
+          foundFromUserId = fromUserId;
+          foundRequestId = request.id;
+          break;
+        }
       }
 
+      // Если нашли — обновляем статус
+      if (foundFromUserId && foundRequestId) {
+        updateJoinRequestStatus(groupId, userId, "approved");
+      }
       // Сохраняем обновлённые joinRequests
       setJoinRequests((prev) => {
         const updated = {
@@ -437,7 +625,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [allUsers],
   );
 
-  const declineJoinRequest = useCallback((groupId: number, userId: number) => {
+  const declineJoinRequest = useCallback((groupId: string, userId: string) => {
     setJoinRequests((prev) => {
       const updated = {
         ...prev,
@@ -450,41 +638,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sendBookingRequest = useCallback(
-    (params: {
-      venueId: number;
-      venueName: string;
-      venueAdminId: number;
-      date: string;
-      time: string;
-      hours: number;
-      totalPrice: number;
-      message: string;
-    }) => {
+    (
+      data: Omit<BookingRequest, "id" | "status" | "createdAt" | "musicianId">,
+    ) => {
       if (!currentUser) return;
+      if (hasTimeConflict(data.venueId, data.date, data.time, data.hours)) {
+        toast({
+          title: "Время уже занято",
+          description: "Выберите другое время или дату",
+          variant: "destructive",
+        });
+        return null;
+      }
 
+      const newRequest: BookingRequest = {
+        id: Date.now().toString(),
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        musicianId: currentUser.id,
+        ...data,
+      };
+
+      setBookingRequests((prev) => {
+        const updated = [...prev, newRequest];
+        saveBookingRequests(updated);
+        return updated;
+      });
       const notification: BookingRequestNotification = {
-        id: Date.now(),
+        id: Date.now().toString(),
         type: "booking_request",
         fromUserId: currentUser.id,
         fromUserName: currentUser.name,
-        venueId: params.venueId,
-        venueName: params.venueName,
-        date: params.date,
-        time: params.time,
-        hours: params.hours,
-        totalPrice: params.totalPrice,
-        message: params.message,
+        venueId: data.venueId,
+        venueName: data.venueName,
+        toUserId: data.venueAdminId,
+        date: data.date,
+        time: data.time,
+        hours: data.hours,
+        totalPrice: data.totalPrice,
+        message: data.message,
         createdAt: new Date().toISOString(),
         read: false,
       };
 
-      addNotificationForUser(params.venueAdminId, notification);
+      addNotificationForUser(data.venueAdminId, notification);
     },
     [currentUser, addNotificationForUser],
   );
+  const updateBookingStatus = useCallback(
+    (requestId: string, newStatus: BookingStatus) => {
+      const updated = updateBookingRequestStatus(requestId, newStatus);
 
+      if (updated) {
+        setBookingRequests((prev) =>
+          prev.map((r) => (r.id === requestId ? updated : r)),
+        );
+
+        const statusText = {
+          approved: "Бронь подтверждена! Музыкант увидит её в календаре.",
+          declined: "Заявка отклонена",
+          pending: "Статус сброшен",
+        }[newStatus];
+
+        toast({ title: statusText });
+        return true;
+      }
+      return false;
+    },
+    [],
+  );
   const acceptGroupInvite = useCallback(
-    (notificationId: number) => {
+    (notificationId: string) => {
       if (!currentUser) return;
       const userNotifications = notificationsByUser[currentUser.id] || [];
       const notif = userNotifications.find(
@@ -503,14 +727,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return updated;
       });
 
-      addMemberToGroupChat(
-        notif.groupId,
-        currentUser.id,
-        currentUser.name,
-        store.dispatch,
-      );
-
-      // 👇 Сохраняем обновлённые уведомления
+      // Сохраняем обновлённые уведомления
       saveUserNotifications(
         currentUser.id,
         (notificationsByUser[currentUser.id] ?? []).filter(
@@ -522,12 +739,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Приглашение принято!",
         description: `Вы присоединились к группе "${notif.groupName}" на позицию "${notif.position}".`,
       });
+
+      const chatId = getChatByGroupId(notif.groupId);
+      if (!chatId) return;
+
+      addMemberToGroupChat(
+        notif.groupId,
+        currentUser.id,
+        currentUser.name,
+        chatId.id,
+        store.dispatch,
+      );
     },
     [currentUser, notificationsByUser, saveUserNotifications],
   );
 
   const declineGroupInvite = useCallback(
-    (notificationId: number) => {
+    (notificationId: string) => {
       if (!currentUser) return;
       saveUserNotifications(
         currentUser.id,
@@ -552,7 +780,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [currentUser, notificationsByUser, saveUserNotifications]);
 
   const markRead = useCallback(
-    (notificationId: number) => {
+    (notificationId: string) => {
       if (!currentUser) return;
       saveUserNotifications(
         currentUser.id,
@@ -565,20 +793,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const createPost = useCallback(
-    (content: string, groupId: number | null, image?: string) => {
+    (
+      content: string,
+      groupId: string | null,
+      media?: {
+        type: "image" | "video" | "audio";
+        url: string;
+        name?: string;
+      }[],
+    ) => {
       if (!currentUser) return;
 
       const newPost: Post = {
-        id: Date.now(),
+        id: Date.now().toString(),
         authorId: currentUser.id,
         content,
         timestamp: new Date().toISOString(),
         likes: [],
         comments: [],
         groupId,
-        image,
+        media,
       };
-
+      console.warn(newPost);
       setPosts((prev) => {
         const updated = [newPost, ...prev];
         savePosts(updated);
@@ -590,10 +826,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [currentUser],
   );
   const addComment = useCallback(
-    (postId: number, text: string) => {
+    (postId: string, text: string) => {
       if (!currentUser) return;
       const newComment: Comment = {
-        id: Date.now(),
+        id: Date.now().toString(),
         userId: currentUser.id,
         text,
         timestamp: new Date().toISOString(),
@@ -610,7 +846,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const toggleLike = useCallback(
-    (postId: number) => {
+    (postId: string) => {
       if (!currentUser) return;
       setPosts((prev) => {
         const updated = prev.map((p) => {
@@ -641,6 +877,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         venuesState,
         allUsers,
         joinRequests,
+        groupInvites,
         notifications,
         posts,
         login,
@@ -652,7 +889,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         addAITag,
         removeAITag,
         sendGroupInvite,
+        acceptSendInvite,
+        declineSendInvite,
         sendBookingRequest,
+        updateBookingStatus,
         sendJoinRequest,
         markAllRead,
         markRead,
