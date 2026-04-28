@@ -1,12 +1,13 @@
 import React from "react";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+// import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/lib/auth-context";
+import { AuthProvider } from "@/contexts/auth-context";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 import { Providers } from "./providers";
+import { StorageInitializer } from "./storage-init";
 export const metadata: Metadata = {
   title: "УМПСМ - Социальная сеть для музыкантов",
   description:
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className="font-sans antialiased">
+        <StorageInitializer />
         <Providers>
           <AuthProvider>
             <AppShell>{children}</AppShell>

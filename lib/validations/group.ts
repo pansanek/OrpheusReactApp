@@ -26,7 +26,7 @@ export const createGroupSchema = z.object({
   invites: z
     .array(
       z.object({
-        userId: z.number(),
+        userId: z.string(),
         position: z.string().min(1, "Выберите позицию для участника"),
       }),
     )

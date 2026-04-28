@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import {
   createGroupSchema,
   type CreateGroupFormValues,
 } from "@/lib/validations/group";
-import { musicians, GENRES } from "@/lib/mock-data";
+import { GENRES } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,10 +39,10 @@ import {
   Link as LinkIcon,
   Users,
   Upload,
-  Check,
+  // Check,
   X,
 } from "lucide-react";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 
 interface CreateGroupDialogProps {
   open: boolean;
@@ -53,7 +53,7 @@ export function CreateGroupDialog({
   open,
   onOpenChange,
 }: CreateGroupDialogProps) {
-  const { currentUser, createGroup } = useAuth();
+  const { currentUser, createGroup, allUsers } = useAuth();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -293,7 +293,7 @@ export function CreateGroupDialog({
             </Label>
 
             <div className="max-h-44 overflow-y-auto border rounded-md bg-muted/10 divide-y">
-              {musicians
+              {allUsers
                 .filter((m) => m.id !== currentUser.id)
                 .map((m) => {
                   const invite = form

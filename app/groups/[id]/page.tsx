@@ -2,15 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  getPostsByGroupId,
-  GENRES,
-  INSTRUMENTS,
-  type OpenPosition,
-  musicians,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -51,7 +44,7 @@ import {
   MapPin,
   Clock,
   Link2,
-  X,
+  // X,
   Plus,
   Save,
   Trash2,
@@ -59,23 +52,27 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { RequestToJoinDialog } from "@/components/request-to-join-dialog";
 import { MusicianCard } from "@/components/musician-card";
+import { GENRES, INSTRUMENTS, OpenPosition } from "@/lib/types";
+import { getMusicianById, getPosts, getPostsByGroupId } from "@/lib/storage";
 
 export default function GroupPage() {
   const params = useParams();
-  const groupId = Number(params?.id);
+  const groupId = String(params?.id);
   const {
     currentUser,
+    allUsers,
     groupsState,
     updateGroup,
     joinRequests,
-    sendJoinRequest,
+    // sendJoinRequest,
     acceptJoinRequest,
     declineJoinRequest,
   } = useAuth();
   const group = groupsState.find((g) => g.id === groupId);
+
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     group?.avatar || null,
   );
@@ -205,8 +202,9 @@ export default function GroupPage() {
   const members = group.members
     .map((mid) => getMusicianById(mid))
     .filter(Boolean);
-  const creator = getMusicianById(group.creatorId);
-  const groupPosts = getPostsByGroupId(group.id);
+  // const creator = getMusicianById(group.creatorId);
+  const posts = getPosts();
+  const groupPosts = getPostsByGroupId(group.id, posts);
   const isMember = currentUser && group.members.includes(currentUser.id);
   const isCreator = currentUser?.id === group.creatorId;
 
@@ -239,13 +237,9 @@ export default function GroupPage() {
               <Avatar className="h-24 w-24">
                 <AvatarImage
                   src={
-                    normalizeImagePath(avatarUrl)
-                      ? group.avatar
-                        ? group.avatar.startsWith("/")
-                          ? group.avatar
-                          : `/${group.avatar}`
-                        : undefined
-                      : undefined
+                    normalizeImagePath(avatarUrl) ??
+                    normalizeImagePath(group.avatar) ??
+                    undefined
                   }
                   alt={group.name}
                 />
@@ -434,11 +428,7 @@ export default function GroupPage() {
                           <Avatar className="h-12 w-12">
                             <AvatarImage
                               src={
-                                member.avatar
-                                  ? member.avatar.startsWith("/")
-                                    ? member.avatar
-                                    : `/${member.avatar}`
-                                  : undefined
+                                normalizeImagePath(member.avatar) ?? undefined
                               }
                               alt={member.name}
                             />
@@ -492,6 +482,12 @@ export default function GroupPage() {
                       <div className="flex items-center gap-3">
                         <Link href={`/profile/${author.id}`}>
                           <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={
+                                normalizeImagePath(author.avatar) ?? undefined
+                              }
+                              alt={author.name}
+                            />
                             <AvatarFallback className="bg-primary text-primary-foreground">
                               {getInitials(author.name)}
                             </AvatarFallback>
@@ -538,7 +534,7 @@ export default function GroupPage() {
             {joinRequests[group.id]?.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {joinRequests[group.id].map((req) => {
-                  const musician = musicians.find((m) => m.id === req.userId);
+                  const musician = allUsers.find((m) => m.id === req.userId);
                   if (!musician) return null;
                   return (
                     <Card

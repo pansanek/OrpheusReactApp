@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import {
-  useFilteredChats,
   useAppDispatch,
   useAppSelector,
+  useFilteredChatsWithDisplay,
+  useCurrentChatId,
+  // useChatsWithDisplay,
 } from "@/store/hooks";
 import { selectChat, deleteChat, setFilter } from "@/store/slices/chatSlice";
-import { ChatType } from "@/store/types/chat.types";
 import { Search, Edit, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +23,10 @@ interface ChatListProps {
 
 export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
   const dispatch = useAppDispatch();
-  const filteredChats = useFilteredChats();
-  const currentChatId = useAppSelector((state) => state.chats.currentChatId);
-  const filter = useAppSelector((state) => state.chats.filter);
+  const chats = useFilteredChatsWithDisplay();
+  console.log("chats", chats);
+  const currentChatId = useCurrentChatId();
+  // const filter = useAppSelector((state) => state.chats.filter);
   const [searchInput, setSearchInput] = useState("");
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
@@ -43,13 +45,8 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
     dispatch(setFilter({ searchQuery: query }));
   };
 
-  // Фильтрация по непрочитанным
-  const displayChats = showUnreadOnly
-    ? filteredChats.filter((chat) => (chat.unreadCount || 0) > 0)
-    : filteredChats;
-
   // Избранные чаты (первые 3 для демо)
-  const favoriteChats = filteredChats.slice(0, 3);
+  const favoriteChats = chats.slice(0, 3);
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -105,13 +102,13 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
                       {chat.avatar ? (
                         <img
-                          src={chat.avatar || "/placeholder.svg"}
-                          alt={chat.name}
+                          src={chat.displayAvatar || "/placeholder.svg"}
+                          alt={chat.displayName}
                           className="h-full w-full object-cover"
                         />
                       ) : (
                         <span className="text-lg font-semibold text-primary">
-                          {chat.name.charAt(0).toUpperCase()}
+                          {chat.displayName?.charAt(0).toUpperCase() || "Чат"}
                         </span>
                       )}
                     </div>
@@ -122,7 +119,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
                     )}
                   </div>
                   <span className="text-xs text-foreground truncate w-full text-center">
-                    {chat.name.split(" ")[0]}
+                    {chat.displayName?.split(" ")[0]}
                   </span>
                 </button>
               ))}
@@ -134,9 +131,9 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
 
       {/* Chat list */}
       <div className="flex-1 overflow-y-auto">
-        {displayChats.length > 0 ? (
+        {chats.length > 0 ? (
           <div className="divide-y divide-border">
-            {displayChats.map((chat) => (
+            {chats.map((chat) => (
               <ChatListItem
                 key={chat.id}
                 chat={chat}
@@ -151,8 +148,8 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
             {searchInput
               ? "Чаты не найдены"
               : showUnreadOnly
-              ? "Нет непрочитанных чатов"
-              : "У вас нет чатов"}
+                ? "Нет непрочитанных чатов"
+                : "У вас нет чатов"}
           </div>
         )}
       </div>

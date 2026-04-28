@@ -1,7 +1,7 @@
 // src/features/chat/utils/getChatDisplayInfo.ts
 
 import { musicians } from "@/lib/mock-data";
-import { Chat, ChatType } from "@/store/types/chat.types";
+import { Chat, ChatType } from "@/lib/types/chat.types";
 
 /**
  * Возвращает данные для отображения чата в списке

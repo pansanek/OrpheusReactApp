@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth, type AppNotification } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,15 +9,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import {
   Bell,
   Users,
   Building2,
-  MessageCircle,
+  // MessageCircle,
   CheckCheck,
   UserPlus,
 } from "lucide-react";
+import { AppNotification } from "@/lib/types/notification.types";
+import { useAuth } from "@/contexts/auth-context";
+import { getNotificationsByUserId } from "@/lib/storage";
 
 function timeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -36,7 +38,7 @@ function NotificationItem({
   onRead,
 }: {
   notification: AppNotification;
-  onRead: (id: number) => void;
+  onRead: (id: string) => void;
 }) {
   if (notification.type === "group_invite") {
     return (
@@ -185,8 +187,9 @@ function NotificationItem({
 }
 
 export function NotificationsPanel() {
-  const { notifications, unreadCount, markAllRead, markRead } = useAuth();
-
+  const { unreadCount, markAllRead, markRead, currentUser } = useAuth();
+  if (!currentUser) return;
+  const notifications = getNotificationsByUserId(currentUser.id);
   return (
     <Popover>
       <PopoverTrigger asChild>

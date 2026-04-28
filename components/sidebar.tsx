@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth-context";
-import { getGroupsByMusicianId } from "@/lib/mock-data";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { cn, normalizeImagePath } from "@/lib/utils/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Home,
@@ -16,8 +15,18 @@ import {
   Star,
   X,
   MessageCircle,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  getApprovedRequestsByMusicianId,
+  getGroupsByMusicianId,
+  getVenueByAdminId,
+} from "@/lib/storage";
+import { SidebarNavItem } from "./sidebarNavItem";
+import { useEffect, useState } from "react";
+import { Badge } from "./ui/badge";
+import { BookingCalendarDialog } from "./booking-calendar-dialog";
 
 interface SidebarProps {
   open?: boolean;
@@ -36,9 +45,32 @@ const navItems = [
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { currentUser } = useAuth();
+  const { currentUser, groupsState } = useAuth();
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [upcomingCount, setUpcomingCount] = useState(0);
 
-  const userGroups = currentUser ? getGroupsByMusicianId(currentUser.id) : [];
+  // Обновляем счётчик при монтировании и при изменениях в localStorage
+  useEffect(() => {
+    const updateCount = () => {
+      if (currentUser) {
+        setUpcomingCount(
+          getApprovedRequestsByMusicianId(currentUser.id, true).length,
+        );
+      }
+    };
+    updateCount();
+    window.addEventListener("storage", updateCount); // Синхронизация между вкладками
+    return () => window.removeEventListener("storage", updateCount);
+  }, [currentUser]);
+
+  const userGroups = currentUser
+    ? getGroupsByMusicianId(currentUser.id, groupsState)
+    : [];
+
+  //  Получаем учреждение, если пользователь — админ
+  const adminVenue = currentUser
+    ? getVenueByAdminId(currentUser.id)
+    : undefined;
 
   const getInitials = (name: string) => {
     return name
@@ -133,55 +165,78 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* Divider */}
         <div className="border-t border-sidebar-border my-4" />
 
-        {/* User's groups */}
-        <div>
-          <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Мои группы
-          </h3>
-          {userGroups.length > 0 ? (
+        {adminVenue && (
+          <div className="mb-4">
+            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Моё учреждение
+            </h3>
+            <SidebarNavItem
+              href={`/venues/${adminVenue.id}`}
+              name={adminVenue.name}
+              avatar={adminVenue.avatar}
+              isActive={pathname === `/venues/${adminVenue.id}`}
+              badge="Админ"
+              badgeColor="admin"
+            />
+          </div>
+        )}
+
+        {/* 👇 Секция "Мои группы" (только если есть) */}
+        {userGroups.length > 0 && (
+          <div className={adminVenue ? "mb-4" : ""}>
+            <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              {adminVenue ? "Группы" : "Мои группы"}
+            </h3>
             <div className="space-y-1">
               {userGroups.map((group) => (
-                <Link
+                <SidebarNavItem
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                    pathname === `/groups/${group.id}`
-                      ? "bg-sidebar-accent"
-                      : "hover:bg-sidebar-accent",
-                  )}
-                >
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={group.avatar ?? undefined}
-                      alt={group.name}
-                    />
-                    <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">
-                      {group.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-sidebar-foreground truncate">
-                    {group.name}
-                  </span>
-                </Link>
+                  name={group.name}
+                  avatar={group.avatar}
+                  isActive={pathname === `/groups/${group.id}`}
+                  badge={
+                    group.creatorId === currentUser.id ? "Админ" : undefined
+                  }
+                  badgeColor={
+                    group.creatorId === currentUser.id ? "admin" : "member"
+                  }
+                />
               ))}
             </div>
-          ) : (
-            <p className="px-3 text-sm text-muted-foreground">
+          </div>
+        )}
+
+        {/* 👇 Пустое состояние — только если нет НИ групп, НИ учреждения */}
+        {userGroups.length === 0 && !adminVenue && (
+          <div className="px-3 py-2">
+            <p className="text-sm text-muted-foreground">
               Вы ещё не состоите в группах
             </p>
-          )}
-        </div>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Создайте группу или присоединитесь к существующей
+            </p>
+          </div>
+        )}
+
         <button
-          onClick={() => {
-            localStorage.removeItem("umpsm_users");
-            window.location.reload();
-          }}
-          className="fixed bottom-4 right-4 px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+          onClick={() => setCalendarOpen(true)}
+          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent"
         >
-          Сбросить пользователей
+          <CalendarDays className="h-5 w-5" />
+          <span className="font-medium flex-1 text-left">Расписание</span>
+          {upcomingCount > 0 && (
+            <Badge className="h-5 min-w-5 flex items-center justify-center p-0 text-[10px] bg-primary text-primary-foreground">
+              {upcomingCount}
+            </Badge>
+          )}
         </button>
       </aside>
+
+      <BookingCalendarDialog
+        open={calendarOpen}
+        onOpenChange={setCalendarOpen}
+      />
     </>
   );
 }

@@ -13,8 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, MapPin, Music, Users } from "lucide-react";
-import { GroupInviteNotification, useAuth } from "@/lib/auth-context";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { GroupInviteNotification } from "@/lib/types/notification.types";
 
 interface GroupInviteDialogProps {
   open: boolean;
@@ -27,16 +28,28 @@ export function GroupInviteDialog({
   onOpenChange,
   notification,
 }: GroupInviteDialogProps) {
-  const { groupsState, acceptGroupInvite, declineGroupInvite } = useAuth();
+  const {
+    groupsState,
+    acceptGroupInvite,
+    declineGroupInvite,
+    acceptSendInvite,
+    declineSendInvite,
+  } = useAuth();
   const group = groupsState.find((g) => g.id === notification.groupId);
-  const { allUsers } = useAuth();
+  const { allUsers, currentUser } = useAuth();
+  const toUser = groupsState.find((g) => g.id === notification.groupId);
   const handleAccept = () => {
     acceptGroupInvite(notification.id);
+    if (!group && !currentUser) return;
+
+    acceptSendInvite(group?.id || "", currentUser?.id || "");
     onOpenChange(false);
   };
 
   const handleDecline = () => {
     declineGroupInvite(notification.id);
+    if (!group && !currentUser) return;
+    declineSendInvite(group?.id || "", currentUser?.id || "");
     onOpenChange(false);
   };
 
@@ -122,7 +135,7 @@ export function GroupInviteDialog({
           </Card>
 
           {/* Предупреждение если уже в группе */}
-          {group?.members.includes(useAuth().currentUser?.id ?? 0) && (
+          {group?.members.includes(useAuth().currentUser?.id ?? "0") && (
             <p className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded">
               Вы уже являетесь участником этой группы
             </p>

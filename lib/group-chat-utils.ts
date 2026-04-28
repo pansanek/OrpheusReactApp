@@ -4,11 +4,12 @@ import {
   createGroupChat,
   addParticipantToChat,
 } from "@/store/slices/chatSlice";
-import { ChatType, Message } from "@/store/types/chat.types";
-import { normalizeImagePath } from "@/lib/utils";
+
+// import { normalizeImagePath } from "@/lib/utils/utils";
 import { getInitials } from "@/utils/chatUtils";
-import { useAuth } from "./auth-context";
-import { Group } from "./mock-data";
+// import { useAuth } from "../contexts/auth-context";
+import { Group } from "./types";
+import { Message } from "./types/chat.types";
 
 /**
  * Создаёт групповой чат при создании группы
@@ -37,12 +38,11 @@ export function initGroupChat(
     id: `msg-sys-${Date.now()}`,
     chatId,
     senderId: "system",
-    senderName: "Система",
     content: `Группа "${group.name}" создана. Добро пожаловать в чат проекта!`,
     type: "system",
     timestamp: Date.now(),
     status: "sent",
-    senderAvatar: null,
+    read: false,
   };
   dispatch(addMessage({ chatId, message: creationMsg }));
 }
@@ -51,27 +51,25 @@ export function initGroupChat(
  * Добавляет нового участника в чат группы и отправляет уведомление
  */
 export function addMemberToGroupChat(
-  groupId: number,
-  userId: number,
+  groupId: string,
+  userId: string,
   userName: string,
+  chatId: string,
   dispatch: AppDispatch,
 ) {
-  const chatId = `group-${groupId}`;
-
   // 1. Добавляем участника в чат (если ещё не добавлен)
   dispatch(addParticipantToChat({ chatId, userId }));
-
+  console.log("chatID", chatId);
   // 2. Системное сообщение о вступлении
   const joinMsg: Message = {
     id: `msg-sys-${Date.now()}`,
     chatId,
     senderId: "system",
-    senderName: "Система",
     content: `${userName} присоединился к группе`,
     type: "system",
     timestamp: Date.now(),
     status: "sent",
-    senderAvatar: null,
+    read: false,
   };
   dispatch(addMessage({ chatId, message: joinMsg }));
 }

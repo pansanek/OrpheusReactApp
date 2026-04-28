@@ -2,12 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
-import {
-  posts as initialPosts,
-  getMusicianById,
-  type Post,
-} from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { getMusicianById } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,32 +17,35 @@ import {
   ImageIcon,
   Video,
   Music as MusicIcon,
-  MoreHorizontal,
+  // MoreHorizontal,
   X,
   Send,
   Film,
   FileAudio,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-// Extend Post type locally with media
-type PostWithMedia = Post & {
-  media?: { type: "image" | "video" | "audio"; url: string; name?: string }[];
-};
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+import { Post } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { ReportButton } from "@/components/report-button";
 
 export default function FeedPage() {
-  const { currentUser } = useAuth();
-  const [feedPosts, setFeedPosts] = useState<PostWithMedia[]>(initialPosts);
+  const { currentUser, allUsers, posts, createPost, addComment, toggleLike } =
+    useAuth();
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
+  const [feedPosts, setFeedPosts] = useState<Post[]>(posts);
   const [newPostContent, setNewPostContent] = useState("");
   const [attachedMedia, setAttachedMedia] = useState<
     { type: "image" | "video" | "audio"; url: string; name: string }[]
   >([]);
-  const { allUsers } = useAuth();
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -91,8 +90,8 @@ export default function FeedPage() {
   const handlePublish = () => {
     if (!currentUser || (!newPostContent.trim() && attachedMedia.length === 0))
       return;
-    const newPost: PostWithMedia = {
-      id: Date.now(),
+    const newPost: Post = {
+      id: Date.now().toString(),
       authorId: currentUser.id,
       content: newPostContent.trim(),
       timestamp: new Date().toISOString(),
@@ -100,19 +99,24 @@ export default function FeedPage() {
       comments: [],
       groupId: null,
       media: attachedMedia.length > 0 ? [...attachedMedia] : undefined,
+      moderationFields: undefined,
     };
+    console.warn("feed", newPost);
     setFeedPosts((prev) => [newPost, ...prev]);
+    createPost(
+      newPostContent.trim(),
+      null,
+      attachedMedia.length > 0 ? [...attachedMedia] : undefined,
+    );
     setNewPostContent("");
     setAttachedMedia([]);
   };
 
   // Per-post component
-  const PostCard = ({ post }: { post: PostWithMedia }) => {
+  const PostCard = ({ post }: { post: Post }) => {
     const author = getMusicianById(post.authorId);
-    const [isLiked, setIsLiked] = useState(
-      currentUser ? post.likes.includes(currentUser.id) : false,
-    );
-    const [likesCount, setLikesCount] = useState(post.likes.length);
+    const isLiked = currentUser ? post.likes.includes(currentUser.id) : false;
+    const likesCount = post.likes.length;
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState(post.comments);
     const [commentText, setCommentText] = useState("");
@@ -121,18 +125,18 @@ export default function FeedPage() {
 
     const handleLike = () => {
       if (!currentUser) return;
-      setIsLiked((v) => !v);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      toggleLike(post.id); //Автосохранение в localStorage
     };
 
     const handleComment = () => {
       if (!currentUser || !commentText.trim()) return;
       const newComment = {
-        id: Date.now(),
+        id: Date.now().toString(),
         userId: currentUser.id,
         text: commentText.trim(),
         timestamp: new Date().toISOString(),
       };
+      addComment(post.id, commentText.trim());
       setComments((prev) => [...prev, newComment]);
       setCommentText("");
     };
@@ -168,7 +172,7 @@ export default function FeedPage() {
                 </p>
               </div>
             </div>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <MoreHorizontal className="h-4 w-4" />
@@ -181,7 +185,15 @@ export default function FeedPage() {
                   Пожаловаться
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
+            <ReportButton
+              options={{
+                reporterId: currentUser.id,
+                reporterName: currentUser.name,
+                targetId: post.id,
+                targetType: "post",
+              }}
+            />
           </div>
         </CardHeader>
 
@@ -497,7 +509,7 @@ export default function FeedPage() {
 
       {/* Posts Feed */}
       <div className="space-y-4">
-        {feedPosts.map((post) => (
+        {posts.map((post) => (
           <PostCard key={post.id} post={post} />
         ))}
       </div>

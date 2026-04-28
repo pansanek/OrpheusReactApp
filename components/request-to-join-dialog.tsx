@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
-import { INSTRUMENTS, musicians } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/auth-context";
+import { INSTRUMENTS } from "@/lib/mock-data";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,19 +23,19 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Send } from "lucide-react";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { useAppDispatch } from "@/store/hooks";
 import { addMessage, createDirectChat } from "@/store/slices/chatSlice";
-import { getInitials } from "@/utils/chatUtils";
-import { Message } from "@/store/types/chat.types";
+// import { getInitials } from "@/utils/chatUtils";
 import { RootState, store } from "@/store/store";
+import { Message } from "@/lib/types/chat.types";
 
 interface RequestToJoinDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  groupId: number;
+  groupId: string;
   groupName: string;
-  groupCreatorId: number;
+  groupCreatorId: string;
 }
 
 export function RequestToJoinDialog({
@@ -45,7 +45,7 @@ export function RequestToJoinDialog({
   groupName,
   groupCreatorId,
 }: RequestToJoinDialogProps) {
-  const { currentUser, sendJoinRequest } = useAuth();
+  const { currentUser, sendJoinRequest, allUsers } = useAuth();
   const dispatch = useAppDispatch();
 
   const [position, setPosition] = useState("");
@@ -78,13 +78,12 @@ export function RequestToJoinDialog({
     });
 
     // Создаём чат с создателем группы и отправляем сообщение
-    const creator = musicians.find((u) => u.id === groupCreatorId);
+    const creator = allUsers.find((u) => u.id === groupCreatorId);
     if (creator && message?.trim()) {
       dispatch(
         createDirectChat({
           participantId: creator.id.toString(),
           participantName: creator.name,
-          participantAvatar: creator.avatar || getInitials(creator.name),
           currentUserId: currentUser?.id.toString() || "user",
         }),
       );
@@ -97,12 +96,11 @@ export function RequestToJoinDialog({
             id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             chatId,
             senderId: currentUser.id.toString(),
-            senderName: currentUser.name,
-            senderAvatar: currentUser?.avatar,
             content: message.trim(),
             type: "text",
             timestamp: Date.now(),
             status: "sent",
+            read: false,
           };
           dispatch(addMessage({ chatId, message: newMessage }));
         }

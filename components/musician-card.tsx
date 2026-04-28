@@ -1,15 +1,15 @@
 "use client";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { useState } from "react";
 import Link from "next/link";
-import type { Musician } from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InviteToGroupDialog } from "@/components/invite-to-group-dialog";
 import { Star, MapPin, MessageCircle, UserPlus } from "lucide-react";
+import { Musician } from "@/lib/types";
 interface MusicianCardProps {
   musician: Musician;
   showActions?: boolean;
@@ -86,7 +86,7 @@ export function MusicianCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <Link
-                  href={`/profile/${musician.id}`}
+                  href={isOwnCard ? "/profile" : `/profile/${musician.id}`}
                   className="font-semibold text-foreground hover:text-primary transition-colors truncate"
                 >
                   {musician.name}
@@ -163,7 +163,9 @@ export function MusicianCard({
                 size="sm"
                 className="flex-1 bg-transparent"
               >
-                <Link href={`/profile/${musician.id}`}>Профиль</Link>
+                <Link href={isOwnCard ? "/profile" : `/profile/${musician.id}`}>
+                  Профиль
+                </Link>
               </Button>
             </div>
           )}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { GroupInviteNotification, useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   INSTRUMENTS,
   GENRES,
@@ -86,12 +86,20 @@ const ROLE_ICONS: Record<
 };
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
-import { normalizeImagePath } from "@/lib/utils";
+import { normalizeImagePath } from "@/lib/utils/utils";
 import { GroupInviteDialog } from "@/components/group-invite-dialog";
+import { getSentInvites, getSentInvitesByUserId } from "@/lib/storage";
+import { GroupInviteNotification } from "@/lib/types/notification.types";
+import { SentInvite } from "@/lib/types/request.types";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { currentUser, updateProfile, notificationsByUser } = useAuth();
+  const { currentUser, updateProfile, groupsState, posts } = useAuth();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     currentUser?.avatar || null,
@@ -121,11 +129,8 @@ export default function ProfilePage() {
     },
     [updateProfile],
   );
-  const myInvites = currentUser
-    ? ((notificationsByUser[currentUser.id] || []).filter(
-        (n) => n.type === "group_invite",
-      ) as GroupInviteNotification[])
-    : [];
+  const myInvites = getSentInvitesByUserId(currentUser.id);
+
   // Edit form state
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -140,8 +145,7 @@ export default function ProfilePage() {
   const [editTelegram, setEditTelegram] = useState("");
   const [editYoutube, setEditYoutube] = useState("");
   const [editSoundcloud, setEditSoundcloud] = useState("");
-  const [selectedInvite, setSelectedInvite] =
-    useState<GroupInviteNotification | null>(null);
+  const [selectedInvite, setSelectedInvite] = useState<SentInvite | null>(null);
   const openEdit = useCallback(() => {
     if (!currentUser) return;
     setEditName(currentUser.name);
@@ -211,13 +215,8 @@ export default function ProfilePage() {
     );
   };
 
-  if (!currentUser) {
-    router.push("/login");
-    return null;
-  }
-
-  const userGroups = getGroupsByMusicianId(currentUser.id);
-  const userPosts = getPostsByAuthorId(currentUser.id);
+  const userGroups = getGroupsByMusicianId(currentUser.id, groupsState);
+  const userPosts = getPostsByAuthorId(currentUser.id, posts);
 
   const getInitials = (name: string) =>
     name
@@ -817,7 +816,7 @@ export default function ProfilePage() {
                     <div>
                       <h4 className="font-semibold">{invite.groupName}</h4>
                       <p className="text-xs text-muted-foreground">
-                        {invite.position} • {invite.fromUserName}
+                        {invite.position} • {invite.fromUserId}
                       </p>
                     </div>
                     <Badge variant="outline" className="shrink-0">
@@ -1068,7 +1067,21 @@ export default function ProfilePage() {
         <GroupInviteDialog
           open={!!selectedInvite}
           onOpenChange={(open) => !open && setSelectedInvite(null)}
-          notification={selectedInvite}
+          notification={{
+            id: selectedInvite.id,
+            type: "group_invite",
+            fromUserId: selectedInvite.fromUserId,
+            fromUserName:
+              allUsers.find((u) => u.id === selectedInvite.fromUserId)?.name ??
+              "Пользователь",
+            toUserId: currentUser.id,
+            groupId: selectedInvite.groupId ?? "0",
+            groupName: selectedInvite.groupName ?? "",
+            position: selectedInvite.position,
+            message: selectedInvite.message,
+            createdAt: selectedInvite.createdAt,
+            read: false,
+          }}
         />
       )}
     </div>

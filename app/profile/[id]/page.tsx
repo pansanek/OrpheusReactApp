@@ -2,18 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  getGroupsByMusicianId,
-  getPostsByAuthorId,
-  AI_TAG_CATEGORIES,
-  USER_ROLES,
-  VENUE_ADMINS,
-  groups,
-  INSTRUMENTS,
-  GENRES,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -36,7 +25,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  // DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -65,8 +54,15 @@ import {
   Mic2,
   Sliders,
 } from "lucide-react";
-import { useParams } from "next/navigation";
-import { normalizeImagePath } from "@/lib/utils";
+import { useParams, useRouter } from "next/navigation";
+import { normalizeImagePath } from "@/lib/utils/utils";
+import {
+  getGroupsByMusicianId,
+  getMusicianById,
+  getPostsByAuthorId,
+} from "@/lib/storage";
+import { AI_TAG_CATEGORIES, GENRES, INSTRUMENTS } from "@/lib/constants";
+import { USER_ROLES, VENUE_ADMINS } from "@/lib/types";
 
 const ROLE_ICONS: Record<
   string,
@@ -82,13 +78,17 @@ const ROLE_ICONS: Record<
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const musicianId = Number(params?.id);
-  const { currentUser, sendGroupInvite } = useAuth();
+  const musicianId = String(params?.id);
+  const { currentUser, sendGroupInvite, groupsState, posts } = useAuth();
   const musician = getMusicianById(musicianId);
-
+  const router = useRouter();
+  if (!currentUser) {
+    router.push("/login");
+    return null;
+  }
   // Invite dialog state
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [creatingNew, setCreatingNew] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupGenre, setNewGroupGenre] = useState("");
@@ -113,12 +113,12 @@ export default function PublicProfilePage() {
   }
 
   const isOwnProfile = currentUser?.id === musician.id;
-  const userGroups = getGroupsByMusicianId(musician.id);
-  const userPosts = getPostsByAuthorId(musician.id);
+  const userGroups = getGroupsByMusicianId(musician.id, groupsState);
+  const userPosts = getPostsByAuthorId(musician.id, posts);
 
   // Current user's groups (as creator or member)
   const myGroups = currentUser
-    ? groups.filter((g) => g.members.includes(currentUser.id))
+    ? groupsState.filter((g) => g.members.includes(currentUser.id))
     : [];
 
   const getInitials = (name: string) =>
@@ -183,7 +183,7 @@ export default function PublicProfilePage() {
   };
 
   const handleInviteSubmit = () => {
-    if (!currentUser) return;
+    if (!currentUser && !selectedGroupId) return;
     if (!creatingNew && !selectedGroupId) {
       toast({ title: "Выберите группу", variant: "destructive" });
       return;
@@ -199,7 +199,7 @@ export default function PublicProfilePage() {
 
     sendGroupInvite({
       toUserId: musician.id,
-      groupId: creatingNew ? null : selectedGroupId,
+      groupId: selectedGroupId || "",
       newGroupData: creatingNew
         ? {
             name: newGroupName,
@@ -209,6 +209,7 @@ export default function PublicProfilePage() {
         : undefined,
       position,
       message: inviteMessage,
+      fromUserId: currentUser.id,
     });
 
     toast({

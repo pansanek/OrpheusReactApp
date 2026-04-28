@@ -1,31 +1,46 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useAuth } from '@/lib/auth-context';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Music, Users, Search, MapPin, Sparkles, ArrowRight } from 'lucide-react';
+import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Music,
+  Users,
+  Search,
+  MapPin,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 
 const features = [
   {
     icon: Search,
-    title: 'Поиск музыкантов',
-    description: 'Найдите единомышленников по инструменту, жанру и уровню мастерства',
+    title: "Поиск музыкантов",
+    description:
+      "Найдите единомышленников по инструменту, жанру и уровню мастерства",
   },
   {
     icon: Users,
-    title: 'Создание групп',
-    description: 'Объединяйтесь в коллективы и работайте над проектами вместе',
+    title: "Создание групп",
+    description: "Объединяйтесь в коллективы и работайте над проектами вместе",
   },
   {
     icon: MapPin,
-    title: 'Каталог учреждений',
-    description: 'Найдите и забронируйте студию или концертную площадку',
+    title: "Каталог учреждений",
+    description: "Найдите и забронируйте студию или концертную площадку",
   },
   {
     icon: Sparkles,
-    title: 'Умные рекомендации',
-    description: 'ИИ подберёт вам идеальных партнёров на основе ваших интересов',
+    title: "Умные рекомендации",
+    description:
+      "ИИ подберёт вам идеальных партнёров на основе ваших интересов",
   },
 ];
 
@@ -38,7 +53,7 @@ export default function HomePage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Привет, {currentUser.name.split(' ')[0]}!
+            Привет, {currentUser.name.split(" ")[0]}!
           </h1>
           <p className="text-muted-foreground">
             Добро пожаловать обратно в УМПСМ
@@ -72,12 +87,14 @@ export default function HomePage() {
                 <Sparkles className="h-5 w-5 text-primary" />
                 Рекомендации
               </CardTitle>
-              <CardDescription>
-                Персональные предложения от ИИ
-              </CardDescription>
+              <CardDescription>Персональные предложения от ИИ</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" className="w-full bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="w-full bg-transparent"
+              >
                 <Link href="/recommendations">
                   Посмотреть
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -97,7 +114,11 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" className="w-full bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="w-full bg-transparent"
+              >
                 <Link href="/groups">
                   Перейти к группам
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -117,7 +138,11 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" className="w-full bg-transparent">
+              <Button
+                asChild
+                variant="outline"
+                className="w-full bg-transparent"
+              >
                 <Link href="/venues">
                   Каталог учреждений
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -138,19 +163,22 @@ export default function HomePage() {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
             <Music className="h-4 w-4" />
-            <span className="text-sm font-medium">Социальная сеть для музыкантов</span>
+            <span className="text-sm font-medium">
+              Социальная сеть для музыкантов
+            </span>
           </div>
-          
+
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 text-balance">
             Найди своих
             <span className="text-primary"> музыкальных </span>
             единомышленников
           </h1>
-          
+
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-            УМПСМ объединяет музыкантов, помогает формировать группы и находить площадки для репетиций и выступлений
+            УМПСМ объединяет музыкантов, помогает формировать группы и находить
+            площадки для репетиций и выступлений
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-base">
               <Link href="/login">
@@ -158,10 +186,13 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-base bg-transparent">
-              <Link href="/search">
-                Посмотреть музыкантов
-              </Link>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-base bg-transparent"
+            >
+              <Link href="/search">Посмотреть музыкантов</Link>
             </Button>
           </div>
         </div>
@@ -173,10 +204,13 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
             Всё для музыкантов в одном месте
           </h2>
-          
+
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((feature) => (
-              <Card key={feature.title} className="text-center hover:shadow-lg transition-shadow">
+              <Card
+                key={feature.title}
+                className="text-center hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <feature.icon className="h-6 w-6 text-primary" />

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils/utils";
+
 import {
   Home,
   Newspaper,
@@ -12,9 +12,9 @@ import {
   Building2,
   Tags,
   Sparkles,
-  User,
   MessageCircle,
 } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 const navItems = [
   { href: "/", label: "Главная", icon: Home },

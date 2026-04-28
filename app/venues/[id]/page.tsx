@@ -2,13 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  getMusicianById,
-  Venue,
-  VENUE_ADMINS,
-  VENUE_TYPES,
-} from "@/lib/mock-data";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
@@ -18,32 +12,32 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Textarea } from "@/components/ui/textarea";
+// import { Separator } from "@/components/ui/separator";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+// } from "@/components/ui/dialog";
 import {
   MapPin,
   Star,
   Clock,
   Music,
   Building2,
-  CalendarDays,
+  // CalendarDays,
   ArrowLeft,
   Phone,
   Mail,
@@ -51,10 +45,10 @@ import {
   Info,
   Settings,
   Link2,
-  Plus,
-  Trash2,
-  Save,
-  X,
+  // Plus,
+  // Trash2,
+  // Save,
+  // X,
   Calendar,
   Camera,
 } from "lucide-react";
@@ -62,20 +56,24 @@ import { toast } from "@/hooks/use-toast";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookingDialog } from "@/components/booking-dialog";
+import { getMusicianById } from "@/lib/storage";
+import { Venue, VENUE_ADMINS } from "@/lib/types";
+import { normalizeImagePath } from "@/lib/utils/utils";
+import { VenueBookingRequestsPanel } from "@/components/venues/VenueBookingRequestsPanel";
 export default function VenuePage() {
   const params = useParams();
-  const venueId = Number(params?.id);
+  const venueId = String(params?.id);
 
   const { currentUser, venuesState, updateVenue, sendBookingRequest } =
     useAuth();
   const venue = venuesState.find((v) => v.id === venueId);
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
   // Booking state
-  const [bookingDate, setBookingDate] = useState("");
-  const [bookingTime, setBookingTime] = useState("");
+  // const [bookingDate, setBookingDate] = useState("");
+  // const [bookingTime, setBookingTime] = useState("");
   const [bookingHours, setBookingHours] = useState("2");
-  const [bookingMessage, setBookingMessage] = useState("");
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  // const [bookingMessage, setBookingMessage] = useState("");
+  // const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
   const [bookedSummary, setBookedSummary] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
@@ -128,7 +126,6 @@ export default function VenuePage() {
   }, [venue?.id, venue?.avatar]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const handleAvatarChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -261,14 +258,12 @@ export default function VenuePage() {
                 {getTypeLabel(venue.type)}
               </span> */}
               <div className="relative shrink-0">
-                <Avatar className="lg:h-48 lg:w-72 w-full lg:aspect-auto">
+                <Avatar className="w-full lg:w-72 aspect-video lg:aspect-auto lg:h-48 bg-muted rounded-xl flex flex-col items-center justify-center gap-2 shrink-0">
                   <AvatarImage
                     src={
-                      venue.avatar
-                        ? venue.avatar.startsWith("/")
-                          ? venue.avatar
-                          : `/${venue.avatar}`
-                        : undefined
+                      normalizeImagePath(avatarUrl) ??
+                      normalizeImagePath(venue.avatar) ??
+                      undefined
                     }
                     alt={venue.name}
                   />
@@ -480,13 +475,7 @@ export default function VenuePage() {
               </div> */}
               <Avatar className="h-9 w-9">
                 <AvatarImage
-                  src={
-                    adminMusician.avatar
-                      ? adminMusician.avatar.startsWith("/")
-                        ? adminMusician.avatar
-                        : `/${adminMusician.avatar}`
-                      : undefined
-                  }
+                  src={normalizeImagePath(adminMusician.avatar) ?? undefined}
                   alt={adminMusician.name}
                 />
                 <AvatarFallback className="bg-secondary text-secondary-foreground text-2xl">
@@ -513,7 +502,20 @@ export default function VenuePage() {
           )}
         </CardContent>
       </Card>
-
+      {currentUser?.id === adminId && (
+        <div className="mt-8">
+          <VenueBookingRequestsPanel
+            venueId={venue.id}
+            venueName={venue.name}
+            adminId={adminId}
+            onStatusChange={(updatedRequest) => {
+              // Опционально: синхронизация с другими компонентами
+              // Например, обновление календаря в сайдбаре
+              console.log("Status changed:", updatedRequest);
+            }}
+          />
+        </div>
+      )}
       {/* Booking Dialog */}
       {bookingVenue && (
         <BookingDialog

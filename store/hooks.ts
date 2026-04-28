@@ -1,81 +1,37 @@
-"use client";
+// store/hooks.ts
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import { useMemo } from "react";
 import type { RootState, AppDispatch } from "./store";
-import { Chat, ChatType } from "./types/chat.types";
-import { useAuth } from "@/lib/auth-context";
-import { selectChatsForUser } from "@/utils/chatSelectors";
-import { getChatDisplayInfo } from "@/utils/getChatDisplayInfo";
-import { getInitials } from "@/utils/chatUtils";
+import { useAuth } from "@/contexts/auth-context";
+import { ChatWithDisplay, ChatType } from "@/lib/types/chat.types";
 
-// Типизированные версии useDispatch и useSelector
+// 🔹 Селекторы
+import {
+  selectChatsWithDisplay,
+  selectCurrentChatWithDisplay,
+  selectFilteredChatsWithDisplay,
+  selectUnreadChatsCount,
+  selectCurrentChatId,
+} from "@/store/slices/chat.selectors";
+
 export const useAppDispatch = () => useDispatch<AppDispatch>();
-export const useAppSelector = <TSelected>(
-  selector: (state: RootState) => TSelected,
-) => useSelector<RootState, TSelected>(selector);
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-// Хук для получения всех чатов с фильтром
-export const useFilteredChats = () => {
-  const filter = useAppSelector((state) => state.chats.filter);
+/**
+ * Возвращает отфильтрованные чаты с вычисленными полями
+ * Мемоизация на уровне селектора + useMemo для безопасности
+ */
+export const useFilteredChatsWithDisplay = (): ChatWithDisplay[] => {
   const { currentUser } = useAuth();
-  const currentUserId = currentUser?.id.toString();
-  const chats = useAppSelector((state) =>
-    selectChatsForUser(state, currentUserId),
-  );
+  const currentUserId = currentUser?.id?.toString() || "";
 
-  return useMemo(() => {
-    const filtered = chats.filter((chat) => {
-      if (
-        !currentUserId ||
-        !chat.participants?.includes(currentUserId.toString())
-      ) {
-        return false;
-      }
-
-      if (filter.type !== "all" && chat.type !== filter.type) {
-        return false;
-      }
-
-      if (filter.searchQuery) {
-        const { displayName } = getChatDisplayInfo(
-          chat,
-          currentUserId.toString(),
-        );
-        const query = filter.searchQuery.toLowerCase();
-        return displayName.toLowerCase().includes(query);
-      }
-
-      return true;
-    });
-
-    return filtered.map((chat) => {
-      const { displayName, displayAvatar } = getChatDisplayInfo(
-        chat,
-        currentUserId?.toString(),
-      );
-
-      return {
-        ...chat,
-        name: displayName,
-        avatar: displayAvatar || getInitials(displayName),
-      };
-    });
-  }, [chats, filter, currentUserId]);
-};
-
-// Хук для получения текущего чата
-export const useCurrentChat = () => {
-  const currentChatId = useAppSelector((state) => state.chats.currentChatId);
-  const chats = useAppSelector((state) => state.chats.chats);
-
-  return useMemo(
-    () => chats.find((c) => c.id === currentChatId),
-    [chats, currentChatId],
+  // 🔹 Передаём currentUserId как второй аргумент селектору:
+  return useAppSelector((state) =>
+    selectFilteredChatsWithDisplay(state, currentUserId),
   );
 };
 
-// Хук для получения сообщений текущего чата
 export const useCurrentChatMessages = () => {
   const currentChatId = useAppSelector((state) => state.chats.currentChatId);
   const messages = useAppSelector((state) => state.chats.messages);
@@ -85,38 +41,70 @@ export const useCurrentChatMessages = () => {
     [messages, currentChatId],
   );
 };
+/**
+ * Возвращает активный чат с вычисленными полями
+ */
+export const useCurrentChatWithDisplay = (): ChatWithDisplay | null => {
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id?.toString() || "";
 
-// Хук для получения чатов по типу
-export const useChatsByType = (type: ChatType) => {
-  const chats = useAppSelector((state) => state.chats.chats);
-
-  return useMemo(
-    () => chats.filter((chat) => chat.type === type),
-    [chats, type],
+  return useAppSelector(
+    (state) => selectCurrentChatWithDisplay(state, currentUserId), // ← передаём параметр
   );
 };
 
-// Хук для получения количества непрочитанных сообщений
-export const useUnreadCount = () => {
-  const chats = useAppSelector((state) => state.chats.chats);
+/**
+ * Возвращает все чаты с вычисленными полями (без фильтрации)
+ */
+export const useChatsWithDisplay = (): ChatWithDisplay[] => {
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id?.toString() || "";
 
-  return useMemo(
-    () => chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0),
-    [chats],
+  return useAppSelector(
+    (state) => selectChatsWithDisplay(state, currentUserId), // ← передаём параметр
   );
 };
 
-// Хук для получения прямых чатов (1-1)
-export const useDirectChats = () => {
-  return useChatsByType(ChatType.DIRECT);
+/**
+ * Возвращает количество непрочитанных сообщений
+ */
+export const useUnreadChatsCount = (): number => {
+  return useAppSelector(selectUnreadChatsCount);
 };
 
-// Хук для получения групповых чатов
-export const useGroupChats = () => {
-  return useChatsByType(ChatType.GROUP);
+/**
+ * Возвращает только текущий чат (без вычисленных полей, если не нужно)
+ */
+export const useCurrentChatId = (): string | null => {
+  return useAppSelector(selectCurrentChatId);
 };
 
-// Хук для получения чатов с учреждениями
-export const useInstitutionChats = () => {
-  return useChatsByType(ChatType.VENUE);
+/**
+ * @deprecated Используйте useFilteredChatsWithDisplay вместо этого
+ * Оставлен для постепенного миграции компонентов
+ */
+export const useFilteredChats = () => {
+  const chatsWithDisplay = useFilteredChatsWithDisplay();
+
+  // Возвращаем в старом формате для совместимости
+  return useMemo(
+    () =>
+      chatsWithDisplay.map(({ displayName, displayAvatar, ...chat }) => ({
+        ...chat,
+        name: displayName,
+        avatar: displayAvatar,
+      })),
+    [chatsWithDisplay],
+  );
+};
+
+/**
+ * @deprecated Используйте useCurrentChatWithDisplay
+ */
+export const useCurrentChat = () => {
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id?.toString() || "";
+  return useAppSelector((state) =>
+    selectCurrentChatWithDisplay(state, currentUserId),
+  );
 };
