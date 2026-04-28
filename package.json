@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "eslint .",
+    "lint": "next lint",
     "start": "next start",
     "test": "vitest",
     "test:run": "vitest run",
@@ -90,6 +90,7 @@
     "@types/testing-library__jest-dom": "^6.0.0",
     "@vitest/coverage-v8": "^4.1.5",
     "@vitest/ui": "^4.1.5",
+    "eslint": "^10.2.1",
     "jsdom": "^29.1.0",
     "msw": "^2.13.6",
     "postcss": "^8.5",
