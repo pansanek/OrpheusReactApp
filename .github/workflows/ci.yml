@@ -31,8 +31,10 @@ jobs:
 
       - name: Lint & Type Check
         run: |
-          pnpm lint
-          pnpm tsc --noEmit
+          pnpm exec eslint .
+          pnpm exec tsc --noEmit
+        env:
+          CI: true
 
       - name: Run Tests
         run: pnpm test -- --run
@@ -43,4 +45,3 @@ jobs:
         run: pnpm build
         env:
           CI: true
-
