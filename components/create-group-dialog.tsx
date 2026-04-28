@@ -39,7 +39,7 @@ import {
   Link as LinkIcon,
   Users,
   Upload,
-  Check,
+  // Check,
   X,
 } from "lucide-react";
 import { normalizeImagePath } from "@/lib/utils/utils";

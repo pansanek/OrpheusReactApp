@@ -72,10 +72,10 @@ export default function AITagsPage() {
     return category?.color || "#6C757D";
   };
 
-  const getCategoryName = (categoryId: string) => {
-    const category = AI_TAG_CATEGORIES.find((c) => c.id === categoryId);
-    return category?.name || categoryId;
-  };
+  // const getCategoryName = (categoryId: string) => {
+  //   const category = AI_TAG_CATEGORIES.find((c) => c.id === categoryId);
+  //   return category?.name || categoryId;
+  // };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">

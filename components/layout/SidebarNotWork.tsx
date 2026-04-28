@@ -12,7 +12,6 @@ import {
   Building2,
   Tags,
   Sparkles,
-  User,
   MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";

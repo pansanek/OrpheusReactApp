@@ -3,6 +3,7 @@ import { JoinRequest } from "../types/request.types";
 export const joinRequests: Record<number, JoinRequest[]> = {
   2: [
     {
+      id: "1",
       userId: "4",
       groupId: "2",
       position: "Скрипка",

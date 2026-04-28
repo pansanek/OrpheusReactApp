@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context";
 import {
   Card,
   CardContent,
-  CardDescription,
+  // CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,22 +16,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from "@/components/ui/dialog";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import { Textarea } from "@/components/ui/textarea";
 import { Users, Plus, Search, Music } from "lucide-react";
 import { CreateGroupDialog } from "@/components/create-group-dialog";
 import { getGroupsByMusicianId, getMusicianById } from "@/lib/storage";
@@ -42,11 +42,11 @@ export default function GroupsPage() {
     currentUser,
     allUsers,
     groupsState,
-    updateGroup,
-    joinRequests,
-    sendJoinRequest,
-    acceptJoinRequest,
-    declineJoinRequest,
+    // updateGroup,
+    // joinRequests,
+    // sendJoinRequest,
+    // acceptJoinRequest,
+    // declineJoinRequest,
   } = useAuth();
   const router = useRouter();
   if (!currentUser) {

@@ -2,14 +2,14 @@
 
 import React from "react";
 
-import { formatDistanceToNow } from "date-fns";
-import { ru } from "date-fns/locale";
+// import { formatDistanceToNow } from "date-fns";
+// import { ru } from "date-fns/locale";
 import { cn } from "@/lib/utils/utils";
 import { Users, Building2, CheckCheck, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Chat, ChatType, ChatWithDisplay } from "@/lib/types/chat.types";
-import { getChatDisplayData } from "@/lib/utils/chat-display";
+// import { getChatDisplayData } from "@/lib/utils/chat-display";
 
 interface ChatListItemProps {
   chat: ChatWithDisplay;

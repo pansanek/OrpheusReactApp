@@ -1,6 +1,6 @@
 // lib/validations/auth.ts (создайте, если нет)
 import { z } from "zod";
-import type { Musician, UserRole } from "@/lib/types";
+// import type { Musician, UserRole } from "@/lib/types";
 
 export const musicianRegistrationSchema = z.object({
   name: z.string().min(2, "Имя должно содержать минимум 2 символа"),

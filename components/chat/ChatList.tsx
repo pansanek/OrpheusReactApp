@@ -6,7 +6,7 @@ import {
   useAppSelector,
   useFilteredChatsWithDisplay,
   useCurrentChatId,
-  useChatsWithDisplay,
+  // useChatsWithDisplay,
 } from "@/store/hooks";
 import { selectChat, deleteChat, setFilter } from "@/store/slices/chatSlice";
 import { Search, Edit, Star } from "lucide-react";
@@ -26,7 +26,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
   const chats = useFilteredChatsWithDisplay();
   console.log("chats", chats);
   const currentChatId = useCurrentChatId();
-  const filter = useAppSelector((state) => state.chats.filter);
+  // const filter = useAppSelector((state) => state.chats.filter);
   const [searchInput, setSearchInput] = useState("");
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 

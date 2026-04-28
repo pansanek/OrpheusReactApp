@@ -12,32 +12,32 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+// import { Input } from "@/components/ui/input";
+// import { Label } from "@/components/ui/label";
+// import { Textarea } from "@/components/ui/textarea";
+// import { Separator } from "@/components/ui/separator";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogFooter,
+//   DialogHeader,
+//   DialogTitle,
+// } from "@/components/ui/dialog";
 import {
   MapPin,
   Star,
   Clock,
   Music,
   Building2,
-  CalendarDays,
+  // CalendarDays,
   ArrowLeft,
   Phone,
   Mail,
@@ -45,10 +45,10 @@ import {
   Info,
   Settings,
   Link2,
-  Plus,
-  Trash2,
-  Save,
-  X,
+  // Plus,
+  // Trash2,
+  // Save,
+  // X,
   Calendar,
   Camera,
 } from "lucide-react";
@@ -69,11 +69,11 @@ export default function VenuePage() {
   const venue = venuesState.find((v) => v.id === venueId);
   const [bookingVenue, setBookingVenue] = useState<Venue | null>(null);
   // Booking state
-  const [bookingDate, setBookingDate] = useState("");
-  const [bookingTime, setBookingTime] = useState("");
+  // const [bookingDate, setBookingDate] = useState("");
+  // const [bookingTime, setBookingTime] = useState("");
   const [bookingHours, setBookingHours] = useState("2");
-  const [bookingMessage, setBookingMessage] = useState("");
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  // const [bookingMessage, setBookingMessage] = useState("");
+  // const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isBooked, setIsBooked] = useState(false);
   const [bookedSummary, setBookedSummary] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(

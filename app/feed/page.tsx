@@ -17,20 +17,21 @@ import {
   ImageIcon,
   Video,
   Music as MusicIcon,
-  MoreHorizontal,
+  // MoreHorizontal,
   X,
   Send,
   Film,
   FileAudio,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { Post } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { ReportButton } from "@/components/report-button";
 
 export default function FeedPage() {
   const { currentUser, allUsers, posts, createPost, addComment, toggleLike } =
@@ -98,6 +99,7 @@ export default function FeedPage() {
       comments: [],
       groupId: null,
       media: attachedMedia.length > 0 ? [...attachedMedia] : undefined,
+      moderationFields: undefined,
     };
     console.warn("feed", newPost);
     setFeedPosts((prev) => [newPost, ...prev]);
@@ -170,7 +172,7 @@ export default function FeedPage() {
                 </p>
               </div>
             </div>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <MoreHorizontal className="h-4 w-4" />
@@ -183,7 +185,15 @@ export default function FeedPage() {
                   Пожаловаться
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
+            <ReportButton
+              options={{
+                reporterId: currentUser.id,
+                reporterName: currentUser.name,
+                targetId: post.id,
+                targetType: "post",
+              }}
+            />
           </div>
         </CardHeader>
 

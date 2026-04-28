@@ -1,19 +1,18 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { musicians, venues } from "@/lib/mock-data";
 import { RootState } from "../store";
-import { useAuth } from "@/contexts/auth-context";
+
 import { getChats, getMessages, getMusicians, getVenues } from "@/lib/storage";
 import { Chat, ChatState, ChatType, Message } from "@/lib/types/chat.types";
 import { Musician, Venue } from "@/lib/types";
 
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
+// const getInitials = (name: string) => {
+//   return name
+//     .split(" ")
+//     .map((n) => n[0])
+//     .join("")
+//     .toUpperCase();
+// };
 
 const initialState: ChatState = {
   chats: getChats(),
@@ -129,11 +128,11 @@ const chatSlice = createSlice({
       const {
         id,
         name,
-        description,
+        // description,
         avatar,
         participantIds,
         currentUserId,
-        groupId,
+        // groupId,
       } = action.payload;
 
       const newChat: Chat = {

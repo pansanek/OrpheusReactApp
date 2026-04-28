@@ -11,6 +11,8 @@ import { CheckCheck, Check } from "lucide-react";
 import { Message } from "@/lib/types/chat.types";
 import { getMusicianById } from "@/lib/storage";
 import { cn } from "@/lib/utils/utils";
+import { ReportButton } from "../report-button";
+import { useAuth } from "@/contexts/auth-context";
 
 interface ChatMessageProps {
   message: Message;
@@ -30,7 +32,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   });
 
   const sender = getMusicianById(message.senderId);
+  const { currentUser } = useAuth();
   if (!sender) return null;
+  if (!currentUser) return null;
   // Формируем инициалы для фолбэка аватара
   const getInitials = (name: string) => {
     return name
@@ -110,7 +114,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </p>
           )}
         </div>
-
+        <div className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ReportButton
+            iconOnly
+            options={{
+              reporterId: currentUser.id,
+              targetId: message.id,
+              targetType: "message",
+            }}
+          />
+        </div>
         {/* Time and read status */}
         <div
           className={cn(

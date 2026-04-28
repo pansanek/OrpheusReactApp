@@ -1,3 +1,5 @@
+import { RolePermissions } from "./moderation.types";
+
 // Константы (только данные, без логики)
 export const INSTRUMENTS = [
   "Гитара",
@@ -46,7 +48,6 @@ export const STATUSES = [
   { value: "online", label: "Онлайн" },
   { value: "offline", label: "Не в сети" },
   { value: "busy", label: "Занят" },
-  { value: "recording", label: "Запись" },
 ] as const;
 
 export const VENUE_TYPES = [
@@ -92,6 +93,34 @@ export const USER_ROLES = [
     description: "Пишу рецензии, беру интервью, веду блог",
     icon: "Newspaper",
   },
+  {
+    id: "moderator",
+    label: "Модератор",
+    description: "Модератор",
+    icon: "Newspaper",
+  },
+  {
+    id: "admin",
+    label: "Администратор",
+    description: "Администратор",
+    icon: "Newspaper",
+  },
 ] as const;
 
+export const ROLE_PERMISSIONS: RolePermissions = {
+  musician: [],
+  teacher: [],
+  venue_admin: [],
+  producer: [],
+  sound_engineer: [],
+  journalist: [],
+  moderator: ["view_reports", "resolve_reports", "delete_content"],
+  admin: [
+    "view_reports",
+    "resolve_reports",
+    "ban_users",
+    "delete_content",
+    "manage_moderators",
+  ],
+};
 export type UserRole = (typeof USER_ROLES)[number]["id"];

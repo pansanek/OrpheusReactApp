@@ -873,6 +873,8 @@ export default function LoginPage() {
       producer: "bg-[#F72585]/10 text-[#F72585] border-[#F72585]/30",
       sound_engineer: "bg-[#7209B7]/10 text-[#7209B7] border-[#7209B7]/30",
       journalist: "bg-[#4CC9F0]/10 text-[#4CC9F0] border-[#4CC9F0]/30",
+      moderator: "bg-[#4CC9F0]/10 text-[#4CC9F0] border-[#4CC9F0]/30",
+      admin: "bg-[#4CC9F0]/10 text-[#4CC9F0] border-[#4CC9F0]/30",
     };
     return map[role];
   };

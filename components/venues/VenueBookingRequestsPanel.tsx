@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { BookingRequest } from "@/lib/types";
 import {
@@ -34,7 +34,7 @@ interface VenueBookingRequestsPanelProps {
 
 export function VenueBookingRequestsPanel({
   venueId,
-  venueName,
+  // venueName,
   adminId,
   onStatusChange,
 }: VenueBookingRequestsPanelProps) {

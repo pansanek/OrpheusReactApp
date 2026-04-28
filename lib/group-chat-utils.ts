@@ -5,9 +5,9 @@ import {
   addParticipantToChat,
 } from "@/store/slices/chatSlice";
 
-import { normalizeImagePath } from "@/lib/utils/utils";
+// import { normalizeImagePath } from "@/lib/utils/utils";
 import { getInitials } from "@/utils/chatUtils";
-import { useAuth } from "../contexts/auth-context";
+// import { useAuth } from "../contexts/auth-context";
 import { Group } from "./types";
 import { Message } from "./types/chat.types";
 

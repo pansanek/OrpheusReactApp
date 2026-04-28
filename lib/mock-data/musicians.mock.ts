@@ -93,7 +93,7 @@ export const musicians: Musician[] = [
       { id: "9", text: "Фанк-джемы", category: "activity" },
       { id: "10", text: "Ищу духовиков", category: "collaboration" },
     ],
-    status: "recording",
+    status: "busy",
     socialLinks: { vk: "ivan_novikov" },
   },
   {
@@ -167,7 +167,7 @@ export const musicians: Musician[] = [
       { id: "15", text: "Сведение и мастеринг", category: "skill" },
       { id: "16", text: "Студийная запись", category: "activity" },
     ],
-    status: "busy",
+    status: "online",
     socialLinks: { vk: "sergey_sound" },
     soundEngineerProfile: {
       specialization: ["Запись", "Сведение", "Мастеринг"],

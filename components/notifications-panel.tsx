@@ -9,12 +9,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+// import { Separator } from "@/components/ui/separator";
 import {
   Bell,
   Users,
   Building2,
-  MessageCircle,
+  // MessageCircle,
   CheckCheck,
   UserPlus,
 } from "lucide-react";

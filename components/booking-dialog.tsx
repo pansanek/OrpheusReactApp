@@ -199,7 +199,7 @@ export function BookingDialog({
           senderId: currentUser.id.toString(),
           content: bookingMessage.trim(),
           type: "text",
-          timestamp: Date.now().toString(),
+          timestamp: Date.now(),
           status: "sent",
           read: false,
         };

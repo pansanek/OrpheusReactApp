@@ -11,6 +11,6 @@ export function savePosts(posts: Post[]): void {
   saveToStorage("posts", posts);
 }
 
-export function getPostById(id: number): Post | undefined {
+export function getPostById(id: string): Post | undefined {
   return getPosts().find((p) => p.id === id);
 }

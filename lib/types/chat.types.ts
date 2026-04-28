@@ -1,6 +1,6 @@
 import { Musician } from "./user.types";
 import { Venue } from "./venue.types";
-
+import { MessageModerationFields } from "./moderation.types";
 export enum ChatType {
   DIRECT = "direct", // 1-1 чат между пользователями
   GROUP = "group", // Групповой чат
@@ -17,6 +17,8 @@ export interface Message {
   read: boolean;
   type: string;
   attachments?: { type: "image" | "file"; url: string; name: string }[];
+
+  moderationFields?: MessageModerationFields;
 }
 
 export interface Chat {

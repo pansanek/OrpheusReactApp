@@ -26,7 +26,7 @@ import { UserPlus, Send } from "lucide-react";
 import { normalizeImagePath } from "@/lib/utils/utils";
 import { useAppDispatch } from "@/store/hooks";
 import { addMessage, createDirectChat } from "@/store/slices/chatSlice";
-import { getInitials } from "@/utils/chatUtils";
+// import { getInitials } from "@/utils/chatUtils";
 import { RootState, store } from "@/store/store";
 import { Message } from "@/lib/types/chat.types";
 

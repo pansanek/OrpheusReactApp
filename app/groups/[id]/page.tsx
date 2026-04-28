@@ -44,7 +44,7 @@ import {
   MapPin,
   Clock,
   Link2,
-  X,
+  // X,
   Plus,
   Save,
   Trash2,
@@ -67,7 +67,7 @@ export default function GroupPage() {
     groupsState,
     updateGroup,
     joinRequests,
-    sendJoinRequest,
+    // sendJoinRequest,
     acceptJoinRequest,
     declineJoinRequest,
   } = useAuth();
@@ -202,7 +202,7 @@ export default function GroupPage() {
   const members = group.members
     .map((mid) => getMusicianById(mid))
     .filter(Boolean);
-  const creator = getMusicianById(group.creatorId);
+  // const creator = getMusicianById(group.creatorId);
   const posts = getPosts();
   const groupPosts = getPostsByGroupId(group.id, posts);
   const isMember = currentUser && group.members.includes(currentUser.id);

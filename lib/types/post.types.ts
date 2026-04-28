@@ -1,3 +1,4 @@
+import { PostModerationFields } from "./moderation.types";
 export interface Comment {
   id: string;
   userId: string;
@@ -14,4 +15,6 @@ export interface Post {
   comments: Comment[];
   groupId: string | null;
   media?: { type: "image" | "video" | "audio"; url: string; name?: string }[];
+
+  moderationFields?: PostModerationFields;
 }
