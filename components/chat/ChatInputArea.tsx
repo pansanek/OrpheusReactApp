@@ -1,16 +1,22 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useAppDispatch, useCurrentChat } from "@/store/hooks";
+import { useAppDispatch, useCurrentChatWithDisplay } from "@/store/hooks";
 import { addMessage } from "@/store/slices/chatSlice";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { Message } from "@/lib/types/chat.types";
-
+import { Paperclip, Send } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 export const ChatInputArea: React.FC = () => {
   const dispatch = useAppDispatch();
   const { currentUser } = useAuth();
-  const currentChat = useCurrentChat();
+  const currentChat = useCurrentChatWithDisplay();
   const [message, setMessage] = useState("");
   const [isComposing, setIsComposing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -75,19 +81,27 @@ export const ChatInputArea: React.FC = () => {
   }
 
   return (
-    <div className="flex-shrink-0 border-t bg-background p-3">
+    <div className="flex-shrink-0 border-t border-border bg-background p-3 safe-area-pb">
       <div className="flex items-end gap-2">
         {/* Attachment button */}
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-9 w-9 p-0 flex-shrink-0"
-          title="Прикрепить файл"
-          type="button"
-        >
-          <span className="text-lg">📎</span>
-        </Button>
-
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-9 w-9 p-0 flex-shrink-0"
+                title="Прикрепить файл"
+                type="button"
+              >
+                <Paperclip className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Прикрепить файл</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         {/* Text input */}
         <div className="flex-1 relative">
           <textarea
@@ -112,7 +126,7 @@ export const ChatInputArea: React.FC = () => {
           className="h-9 px-4 flex-shrink-0"
           type="button"
         >
-          Отправить
+          <Send className="h-4 w-4" />
         </Button>
       </div>
     </div>

@@ -124,3 +124,11 @@ export const ROLE_PERMISSIONS: RolePermissions = {
   ],
 };
 export type UserRole = (typeof USER_ROLES)[number]["id"];
+export const PUBLIC_REGISTRATION_ROLES = USER_ROLES.filter(
+  (role) => !["moderator", "admin"].includes(role.id),
+) as ReadonlyArray<{
+  id: Exclude<UserRole, "moderator" | "admin">;
+  label: string;
+  description: string;
+  icon: string;
+}>;

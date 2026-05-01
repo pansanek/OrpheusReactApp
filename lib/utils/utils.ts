@@ -8,7 +8,6 @@ export function cn(...inputs: ClassValue[]) {
 export function normalizeImagePath(
   path: string | null | undefined,
 ): string | undefined {
-  console.log(path);
   if (!path) return undefined;
   if (path?.length > 1_000_000) {
     console.warn(

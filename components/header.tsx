@@ -32,7 +32,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 h-16 bg-card border-b border-border shadow-sm">
-      <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between gap-4">
+      <div className="h-full w-full px-4 grid grid-cols-[auto_1fr_auto] items-center gap-4">
         {/* Left section */}
         <div className="flex items-center gap-4">
           <Button

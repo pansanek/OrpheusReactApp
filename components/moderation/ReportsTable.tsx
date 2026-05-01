@@ -17,7 +17,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Check, X, Ban } from "lucide-react";
+import {
+  MoreHorizontal,
+  Eye,
+  Check,
+  X,
+  Ban,
+  MessageCircle,
+  User,
+  Newspaper,
+} from "lucide-react";
 import {
   ModerationQueueItem,
   ReportStatus,
@@ -25,7 +34,6 @@ import {
 
 interface ReportsTableProps {
   items: ModerationQueueItem[];
-  loading: boolean;
   onSelect: (item: ModerationQueueItem) => void;
   onQuickAction: (id: string, action: "dismiss" | "resolve" | "ban") => void;
   actionLoading: Record<string, boolean>;
@@ -38,25 +46,20 @@ const statusColors: Record<ReportStatus, string> = {
   dismissed: "bg-gray-100 text-gray-800 hover:bg-gray-200",
 };
 
-const typeIcons: Record<string, string> = {
-  post: "📝",
-  message: "💬",
-  profile: "👤",
+const TYPE_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  post: Newspaper,
+  message: MessageCircle,
+  profile: User,
 };
-
 export const ReportsTable = ({
   items,
-  loading,
   onSelect,
   onQuickAction,
   actionLoading,
 }: ReportsTableProps) => {
-  if (loading)
-    return (
-      <div className="text-center py-10 text-muted-foreground">
-        Загрузка репортов...
-      </div>
-    );
   if (items.length === 0)
     return (
       <div className="text-center py-10 text-muted-foreground">
@@ -78,88 +81,91 @@ export const ReportsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map(({ report }) => (
-            <TableRow
-              key={report.id}
-              className={report.status === "pending" ? "bg-muted/30" : ""}
-            >
-              <TableCell className="font-medium">
-                {report.reporterName || report.reporterId}
-                {report.status === "pending" && (
-                  <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1.5">
-                  <span>{typeIcons[report.targetType]}</span>
-                  <span className="font-mono text-xs text-muted-foreground truncate max-w-[120px]">
-                    {report.targetId}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="capitalize">
-                {report.reason.replace("_", " ")}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  className={
-                    statusColors[report.status] || statusColors.pending
-                  }
-                >
-                  {report.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-muted-foreground text-sm">
-                {new Date(report.timestamp).toLocaleString("ru-RU")}
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={actionLoading[report.id]}
-                    >
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onSelect({ report })}>
-                      <Eye className="w-4 h-4 mr-2" /> Подробнее
-                    </DropdownMenuItem>
-                    {report.status === "pending" && (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() => onQuickAction(report.id, "dismiss")}
-                          disabled={actionLoading[report.id]}
-                        >
-                          <Check className="w-4 h-4 mr-2 text-green-600" />{" "}
-                          Отклонить репорт
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onQuickAction(report.id, "resolve")}
-                          disabled={actionLoading[report.id]}
-                        >
-                          <X className="w-4 h-4 mr-2 text-red-600" />{" "}
-                          Подтвердить и скрыть
-                        </DropdownMenuItem>
-                        {report.targetType === "profile" && (
+          {items.map(({ report }) => {
+            const TargetIcon = TYPE_ICONS[report.targetType] || User;
+            return (
+              <TableRow
+                key={report.id}
+                className={report.status === "pending" ? "bg-muted/30" : ""}
+              >
+                <TableCell className="font-medium">
+                  {report.reporterName || report.reporterId}
+                  {report.status === "pending" && (
+                    <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1.5">
+                    <TargetIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-mono text-xs text-muted-foreground truncate max-w-[120px]">
+                      {report.targetId}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="capitalize">
+                  {report.reason.replace("_", " ")}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    className={
+                      statusColors[report.status] || statusColors.pending
+                    }
+                  >
+                    {report.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {new Date(report.timestamp).toLocaleString("ru-RU")}
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={actionLoading[report.id]}
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onSelect({ report })}>
+                        <Eye className="w-4 h-4 mr-2" /> Подробнее
+                      </DropdownMenuItem>
+                      {report.status === "pending" && (
+                        <>
                           <DropdownMenuItem
-                            onClick={() => onQuickAction(report.id, "ban")}
-                            disabled={actionLoading[`ban_${report.targetId}`]}
-                            className="text-orange-600"
+                            onClick={() => onQuickAction(report.id, "dismiss")}
+                            disabled={actionLoading[report.id]}
                           >
-                            <Ban className="w-4 h-4 mr-2" /> Забанить
-                            пользователя
+                            <X className="w-4 h-4 mr-2 text-red-600" />{" "}
+                            Отклонить репорт
                           </DropdownMenuItem>
-                        )}
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+                          <DropdownMenuItem
+                            onClick={() => onQuickAction(report.id, "resolve")}
+                            disabled={actionLoading[report.id]}
+                          >
+                            <Check className="w-4 h-4 mr-2 text-green-600" />{" "}
+                            Подтвердить и скрыть
+                          </DropdownMenuItem>
+                          {report.targetType === "profile" && (
+                            <DropdownMenuItem
+                              onClick={() => onQuickAction(report.id, "ban")}
+                              disabled={actionLoading[`ban_${report.targetId}`]}
+                              className="text-orange-600"
+                            >
+                              <Ban className="w-4 h-4 mr-2" /> Забанить
+                              пользователя
+                            </DropdownMenuItem>
+                          )}
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

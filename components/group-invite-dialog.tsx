@@ -38,8 +38,9 @@ export function GroupInviteDialog({
   const group = groupsState.find((g) => g.id === notification.groupId);
   const { allUsers, currentUser } = useAuth();
   const toUser = groupsState.find((g) => g.id === notification.groupId);
+
   const handleAccept = () => {
-    acceptGroupInvite(notification.id);
+    // acceptGroupInvite(notification.id);
     if (!group && !currentUser) return;
 
     acceptSendInvite(group?.id || "", currentUser?.id || "");
@@ -47,7 +48,7 @@ export function GroupInviteDialog({
   };
 
   const handleDecline = () => {
-    declineGroupInvite(notification.id);
+    // declineGroupInvite(notification.id);
     if (!group && !currentUser) return;
     declineSendInvite(group?.id || "", currentUser?.id || "");
     onOpenChange(false);

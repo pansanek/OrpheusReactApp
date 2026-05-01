@@ -3,7 +3,7 @@
 import { Chat, ChatType, ChatWithDisplay } from "@/lib/types/chat.types";
 import { Musician } from "@/lib/types/user.types";
 import { Venue } from "@/lib/types/venue.types";
-
+import { VENUE_ADMINS } from "@/lib/types/venue.types";
 interface EnrichChatOptions {
   currentUserId: string;
   musicians: Musician[];
@@ -25,6 +25,7 @@ export function enrichChatWithDisplay(
     participantsIsArray: Array.isArray(chat.participants),
     currentUserId,
     musicians,
+    venueAdminOf,
   });
   const base = { ...chat }; // Копируем исходные данные
 
@@ -55,8 +56,19 @@ export function enrichChatWithDisplay(
     }
 
     case ChatType.VENUE: {
-      const isVenueAdmin = chat.venue && venueAdminOf.includes(chat.venue);
+      const venue = venues
+        ? venues.find((venue) => venue.id == chat.venue)
+        : undefined;
+      if (!venue)
+        return {
+          ...base,
+          displayName: chat.name || "Чат",
+          displayAvatar: chat.avatar ?? null,
+        };
 
+      const isVenueAdmin =
+        chat.venue && VENUE_ADMINS[venue.id] == currentUserId;
+      console.log("isVenueAdmin", isVenueAdmin);
       if (isVenueAdmin) {
         // Админ учреждения видит собеседника-музыканта
         const otherUserId = chat.participants.find(

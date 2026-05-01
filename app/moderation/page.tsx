@@ -15,14 +15,19 @@ import { ReportActionDialog } from "@/components/moderation/ReportActionDialog";
 import { ModerationQueueItem } from "@/lib/types/moderation.types";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
 
-const CURRENT_MODERATOR_ID = "mod_001";
-
+const CURRENT_MODERATOR_ID = "1";
 export default function ModerationPage() {
   const dispatch = useAppDispatch();
+  const { currentUser } = useAuth();
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
-  // ✅ Правильная деструктуризация:
-  // - selectModerationQueue возвращает { items, total, page, limit }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const {
     items: queueItems,
     total,
@@ -30,10 +35,15 @@ export default function ModerationPage() {
     limit,
   } = useAppSelector(selectModerationQueue);
   // - loading и actionLoading берём из общего состояния
-  const { loading, pagination, actionLoading } = useAppSelector(
-    selectModerationState,
-  );
-
+  const { pagination, actionLoading } = useAppSelector(selectModerationState);
+  useEffect(() => {
+    if (!mounted) return;
+    // Если пользователя нет или роль не подходит — редирект
+    if (!currentUser || !["moderator", "admin"].includes(currentUser.role)) {
+      router.replace("/feed"); // или "/403", если создадите такую страницу
+      return;
+    }
+  }, [currentUser, router, mounted]);
   const [selectedItem, setSelectedItem] = useState<ModerationQueueItem | null>(
     null,
   );
@@ -61,7 +71,20 @@ export default function ModerationPage() {
 
   // ✅ Используем total из селектора очереди, а limit/pagination — из состояния
   const totalPages = Math.ceil(total / (pagination.limit || limit)) || 1;
-
+  if (
+    !mounted ||
+    !currentUser ||
+    !["moderator", "admin"].includes(currentUser.role)
+  ) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Проверка доступа...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -73,23 +96,12 @@ export default function ModerationPage() {
             Управление жалобами, контентом и пользователями
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => dispatch(fetchModerationReports())}
-          disabled={loading}
-        >
-          <RefreshCw
-            className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
-          />{" "}
-          Обновить
-        </Button>
       </div>
 
       <ReportsFilters />
 
       <ReportsTable
         items={queueItems} // ✅ было: queue.items
-        loading={loading} // ✅ берём из selectModerationState
         onSelect={handleSelect}
         onQuickAction={handleQuickAction}
         actionLoading={actionLoading}

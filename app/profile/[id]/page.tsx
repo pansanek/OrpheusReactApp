@@ -63,6 +63,7 @@ import {
 } from "@/lib/storage";
 import { AI_TAG_CATEGORIES, GENRES, INSTRUMENTS } from "@/lib/constants";
 import { USER_ROLES, VENUE_ADMINS } from "@/lib/types";
+import { ReportButton } from "@/components/report-button";
 
 const ROLE_ICONS: Record<
   string,
@@ -227,7 +228,7 @@ export default function PublicProfilePage() {
     setPosition("");
     setInviteMessage("");
   };
-
+  const canReport = currentUser && currentUser.id !== musician.id;
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Profile Header */}
@@ -288,6 +289,16 @@ export default function PublicProfilePage() {
                   <Button asChild variant="outline" size="sm">
                     <Link href="/profile">Редактировать</Link>
                   </Button>
+                )}
+                {canReport && (
+                  <ReportButton
+                    options={{
+                      reporterId: currentUser!.id,
+                      reporterName: currentUser!.name,
+                      targetId: musician.id,
+                      targetType: "profile",
+                    }}
+                  />
                 )}
               </div>
 

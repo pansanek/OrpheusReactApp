@@ -4,9 +4,9 @@ import { ModerationReport } from "../types/moderation.types";
 export const MOCK_REPORTS: ModerationReport[] = [
   {
     id: "rep_001",
-    reporterId: "user_123",
-    reporterName: "Алексей К.",
-    targetId: "post_456",
+    reporterId: "2",
+    reporterName: "Мария Сидорова",
+    targetId: "1",
     targetType: "post",
     reason: "spam",
     timestamp: Date.now() - 3600000,
@@ -14,9 +14,9 @@ export const MOCK_REPORTS: ModerationReport[] = [
   },
   {
     id: "rep_002",
-    reporterId: "user_789",
-    reporterName: "Мария П.",
-    targetId: "msg_101",
+    reporterId: "2",
+    reporterName: "Мария Сидорова",
+    targetId: "5",
     targetType: "message",
     reason: "harassment",
     description: "Оскорбления в личном сообщении",

@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import {
   useCurrentChatMessages,
@@ -24,11 +24,37 @@ export const ChatMessagesArea: React.FC = () => {
   const currentChat = useCurrentChatWithDisplay();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   // Auto-scroll to bottom when new messages arrive
+  const [isAtBottom, setIsAtBottom] = useState(true);
+
+  // 1️⃣ Отслеживаем позицию скролла пользователя
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      // Допуск 50px: считаем "внизу", если до конца < 50px
+      const isBottom =
+        container.scrollHeight - container.scrollTop <=
+        container.clientHeight + 50;
+      setIsAtBottom(isBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    handleScroll(); // Проверяем сразу при монтировании
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // 2️ Умный автоскролл: только если пользователь был внизу
+  useEffect(() => {
+    if (isAtBottom && messagesEndRef.current) {
+      // Небольшая задержка для корректного расчета высоты после рендера
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
+  }, [messages, isAtBottom]);
 
   // Пока чат не загружен — показываем заглушку
   if (!currentChat) {
@@ -75,7 +101,7 @@ export const ChatMessagesArea: React.FC = () => {
         : undefined;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 h-full overflow-hidden">
       {/* Chat header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between px-4 py-3">
@@ -137,7 +163,7 @@ export const ChatMessagesArea: React.FC = () => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 h-0">
+      <ScrollArea className="flex-1 min-h-0">
         {messages.length > 0 ? (
           <div className="py-4 space-y-3 px-4">
             {messages.map((message, index) => {

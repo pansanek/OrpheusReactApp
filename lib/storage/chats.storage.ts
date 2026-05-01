@@ -24,6 +24,7 @@ export function getChatsByUserId(userId: string): Chat[] {
 }
 
 export function getChatByGroupId(groupId: string): Chat | undefined {
+  console.log("getChatByGroupId", groupId);
   return getChats().find((c) => c.groupId === groupId);
 }
 

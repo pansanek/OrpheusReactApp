@@ -6,7 +6,7 @@ export const musicians: Musician[] = [
     name: "Александр Потемкин",
     email: "pansanek@mail.com",
     phone: "+7 (916) 123-45-67",
-    role: "musician",
+    role: "admin",
     instruments: ["Гитара", "Вокал"],
     genres: ["Рок", "Метал"],
     skillLevel: 4,

@@ -7,12 +7,20 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, Check } from "lucide-react";
+import { CheckCheck, Check, MoreHorizontal } from "lucide-react";
 import { Message } from "@/lib/types/chat.types";
 import { getMusicianById } from "@/lib/storage";
 import { cn } from "@/lib/utils/utils";
 import { ReportButton } from "../report-button";
 import { useAuth } from "@/contexts/auth-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface ChatMessageProps {
   message: Message;
@@ -30,7 +38,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const timeString = format(new Date(message.timestamp), "HH:mm", {
     locale: ru,
   });
-
+  console.log("isOwnMessage", isOwnMessage);
   const sender = getMusicianById(message.senderId);
   const { currentUser } = useAuth();
   if (!sender) return null;
@@ -132,6 +140,31 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           )}
         >
           <time dateTime={message.timestamp.toString()}>{timeString}</time>
+          {!isOwnMessage && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="opacity-100 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted-foreground/10 rounded">
+                  <MoreHorizontal className="w-3 h-3" />
+                </button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+
+                <ReportButton
+                  iconOnly
+                  options={{
+                    reporterId: currentUser.id,
+                    reporterName: currentUser.name,
+                    targetId: message.id,
+                    targetType: "message",
+                  }}
+                  className="w-full justify-start text-destructive focus:text-destructive"
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {isOwnMessage && (
             <span
               className={cn(

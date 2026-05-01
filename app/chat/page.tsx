@@ -33,7 +33,7 @@ export default function ChatPage() {
         </div>
       }
     >
-      <main className="h-[100dvh] w-full overflow-hidden bg-background">
+      <main className="h-screen w-full overflow-hidden bg-background">
         <ChatPageContent />
       </main>
     </Suspense>

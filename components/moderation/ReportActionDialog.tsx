@@ -21,6 +21,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Loader2, ShieldCheck, ShieldX, Ban } from "lucide-react";
 import { selectModerationState } from "@/store/slices/moderationSlice";
+import { ReportTargetPreview } from "./ReportTargetPreview";
 
 interface Props {
   item: ModerationQueueItem | null;
@@ -121,6 +122,12 @@ export const ReportActionDialog = ({
             {report.targetType} •{" "}
             {new Date(report.timestamp).toLocaleString("ru-RU")}
           </DialogDescription>
+          <div className="py-2">
+            <ReportTargetPreview
+              targetId={report.targetId}
+              targetType={report.targetType}
+            />
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

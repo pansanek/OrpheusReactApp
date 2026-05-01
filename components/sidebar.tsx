@@ -16,17 +16,20 @@ import {
   X,
   MessageCircle,
   CalendarDays,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   getApprovedRequestsByMusicianId,
   getGroupsByMusicianId,
+  getModerationReports,
   getVenueByAdminId,
 } from "@/lib/storage";
 import { SidebarNavItem } from "./sidebarNavItem";
 import { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
 import { BookingCalendarDialog } from "./booking-calendar-dialog";
+import { ThemeToggle } from "./layout/theme-toggle";
 
 interface SidebarProps {
   open?: boolean;
@@ -48,7 +51,16 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const { currentUser, groupsState } = useAuth();
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [upcomingCount, setUpcomingCount] = useState(0);
+  const [pendingReportsCount, setPendingReportsCount] = useState(0);
 
+  // useEffect для подсчёта (после существующего useEffect с upcomingCount):
+  useEffect(() => {
+    if (currentUser?.role === "moderator" || currentUser?.role === "admin") {
+      const reports = getModerationReports(); // импортируйте из moderation.storage
+      const pending = reports.filter((r) => r.status === "pending").length;
+      setPendingReportsCount(pending);
+    }
+  }, [currentUser]);
   // Обновляем счётчик при монтировании и при изменениях в localStorage
   useEffect(() => {
     const updateCount = () => {
@@ -160,6 +172,28 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
+          {(currentUser.role === "moderator" ||
+            currentUser.role === "admin") && (
+            <Link
+              href="/moderation"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                pathname === "/moderation"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent",
+              )}
+            >
+              <Shield className="h-5 w-5" />
+              <span className="font-medium">Модерация</span>
+              {/* Опционально: бейдж с количеством новых репортов */}
+              <Badge
+                variant="destructive"
+                className="ml-auto h-5 min-w-5 p-0 text-[10px]"
+              >
+                {pendingReportsCount}
+              </Badge>
+            </Link>
+          )}
         </nav>
 
         {/* Divider */}
@@ -232,7 +266,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           )}
         </button>
       </aside>
-
+      {/* <div className="flex items-center gap-2">
+        <ThemeToggle />
+      </div> */}
       <BookingCalendarDialog
         open={calendarOpen}
         onOpenChange={setCalendarOpen}

@@ -48,7 +48,7 @@ import {
   JournalistProfile,
   UserRole,
   Musician,
-  USER_ROLES,
+  PUBLIC_REGISTRATION_ROLES,
 } from "@/lib/types";
 
 // --- Иконки ролей ---
@@ -863,7 +863,7 @@ export default function LoginPage() {
       .slice(0, 2);
 
   const getRoleBadgeLabel = (role: UserRole) =>
-    USER_ROLES.find((r) => r.id === role)?.label ?? role;
+    PUBLIC_REGISTRATION_ROLES.find((r) => r.id === role)?.label ?? role;
 
   const getRoleColor = (role: UserRole) => {
     const map: Record<UserRole, string> = {
@@ -1094,7 +1094,7 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {USER_ROLES.map((role) => {
+              {PUBLIC_REGISTRATION_ROLES.map((role) => {
                 const Icon = ROLE_ICONS[role.id];
                 const isSelected = selectedRole === role.id;
                 return (
@@ -1261,8 +1261,11 @@ export default function LoginPage() {
           <Card>
             <CardHeader>
               <CardTitle>
-                {USER_ROLES.find((r) => r.id === selectedRole)?.label} — детали
-                профиля
+                {
+                  PUBLIC_REGISTRATION_ROLES.find((r) => r.id === selectedRole)
+                    ?.label
+                }{" "}
+                — детали профиля
               </CardTitle>
               <CardDescription>
                 Эта информация поможет найти вас нужным людям

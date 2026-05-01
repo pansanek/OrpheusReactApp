@@ -100,7 +100,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onNewChat }) => {
                 >
                   <div className="relative">
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden ring-2 ring-transparent group-hover:ring-primary/20 transition-all">
-                      {chat.avatar ? (
+                      {chat.displayAvatar ? (
                         <img
                           src={chat.displayAvatar || "/placeholder.svg"}
                           alt={chat.displayName}

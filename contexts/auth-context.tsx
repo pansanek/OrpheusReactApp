@@ -417,6 +417,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const acceptSendInvite = useCallback(
     (groupId: string, userId: string) => {
+      console.log("acceptSendInvite", groupId, userId);
       const user = allUsers.find((m) => m.id === userId);
       if (!user) return;
       setGroupsState((prev) => {
@@ -428,7 +429,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveGroups(updated);
         return updated;
       });
+
       const chatId = getChatByGroupId(groupId);
+      console.log("acceptSendInvite", chatId);
       if (!chatId) return;
 
       addMemberToGroupChat(
@@ -439,7 +442,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         store.dispatch,
       );
       const sentInvites = getSentInvites(); // Получаем все отправленные инвайты
-
+      console.log("acceptSendInvite", sentInvites);
       // Ищем инвайт: от кого (fromUserId) и какой ID, чтобы обновить статус
       let foundFromUserId: string | undefined;
       let foundInviteId: string | undefined;
@@ -457,7 +460,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           break;
         }
       }
-
+      console.log("acceptSendInvite", foundFromUserId, foundInviteId);
       // Если нашли — обновляем статус
       if (foundFromUserId && foundInviteId) {
         updateSentInviteStatus(foundFromUserId, foundInviteId, "accepted");
@@ -709,6 +712,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
   const acceptGroupInvite = useCallback(
     (notificationId: string) => {
+      console.log("acceptGroupInvite", notificationId);
       if (!currentUser) return;
       const userNotifications = notificationsByUser[currentUser.id] || [];
       const notif = userNotifications.find(
@@ -726,7 +730,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveGroups(updated);
         return updated;
       });
-
+      setGroupInvites((prev) => {
+        const updated = {
+          ...prev,
+          [notif.groupId]: (prev[notif.groupId] ?? []).filter(
+            (invite) =>
+              !(invite.toUserId === currentUser.id && invite.status === "sent"),
+          ),
+        };
+        saveSentInvites(updated);
+        return updated;
+      });
       // Сохраняем обновлённые уведомления
       saveUserNotifications(
         currentUser.id,
